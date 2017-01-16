@@ -43,7 +43,7 @@ struct ch_suite* left_pass(struct ch_suite* ct) {
     return ct;
 }
 
-struct bucket* init_buckets(char *text) {
+struct bucket_suite* init_buckets(char *text) {
     int alphabet_size = 26;
     long *characters = calloc(alphabet_size + 1, sizeof(long*));
 
@@ -77,7 +77,11 @@ struct bucket* init_buckets(char *text) {
     struct bucket bucket$ = { '$', NULL, 1, NULL };
     buckets[current_bucket] = bucket$;
 
-    return buckets;
+    struct bucket_suite* bucket_suite = malloc(sizeof(bucket_suite));
+    bucket_suite->buckets = buckets;
+    bucket_suite->length = current_bucket;
+
+    return bucket_suite;
 }
 
 /**

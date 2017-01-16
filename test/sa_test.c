@@ -83,7 +83,7 @@ void init_buckets_test() {
 
     char* t = "BIOINFORMATIKA$";
 
-    struct bucket* buckets = init_buckets(t);
+    struct bucket* buckets = init_buckets(t)->buckets;
 
     struct bucket buckets_valid[11] = {
 	{ 'A', NULL, 2, NULL },

@@ -30,7 +30,7 @@ struct bucket_suite {
 
 struct ch_suite* right_pass(char* text);
 struct ch_suite* left_pass(struct ch_suite* text);
-struct bucket* init_buckets(char *t);
+struct bucket_suite* init_buckets(char *t);
 int* suffix_array(char* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);
