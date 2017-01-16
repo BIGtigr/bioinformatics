@@ -110,6 +110,59 @@ void init_buckets_test() {
 	   test_pass);
 }
 
+void buckets_place_sstar_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct bucket_suite* bucket_suite = init_buckets(t);
+    struct bucket* buckets = bucket_suite->buckets;
+    struct ch_suite* ch_suite = left_pass(right_pass(t));
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+
+    long indicesI[] = { -1, 3, 2 };
+    long indicesF[] = { 5 };
+    long indicesA[] = { -1, 9 };
+    long indices$[] = { 14 };
+
+    struct bucket buckets_valid[11] = {
+	// znak, popis indeksa S* ili -1, broj pojavljivanja znaka u tekstu, pozicija gdje će zapisati sljedeći indeks
+	{ 'A', indicesA, 2, 0 },
+	{ 'B', malloc(sizeof(long)), 1, 0 },
+	{ 'F', indicesF, 1, -1 },
+	{ 'I', indicesI, 3, 0 },
+	{ 'K', malloc(sizeof(long)), 1, 0 },
+	{ 'M', malloc(sizeof(long)), 1, 0 },
+	{ 'N', malloc(sizeof(long)), 1, 0 },
+	{ 'O', malloc(sizeof(long) * 2), 2, 1 },
+	{ 'R', malloc(sizeof(long)), 1, 0 },
+	{ 'T', malloc(sizeof(long)), 1, 0 },
+	{ '$', indices$, 1, -1 }
+    };
+
+    for (int i = 0; i < 11; ++i) {
+	struct bucket b1 = buckets[i];
+	struct bucket b2 = buckets_valid[i];
+	long i1 = b1.indices_position;
+	long i2 = b2.indices_position;
+
+	if (i1 == i2 && b1.character == b2.character) {
+	    continue;
+	}
+
+	if (b1.character != b2.character ||
+	    b1.length != b2.length ||
+	    b1.indices[b1.indices_position] !=
+	    b2.indices[b2.indices_position]) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: buckets_place_sstar_test(): %d\n",
+	   test_pass);
+}
+
 void suffix_array_test() {
     int test_pass = 1;
 

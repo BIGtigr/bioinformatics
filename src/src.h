@@ -18,9 +18,9 @@ struct ch_suite {
 struct bucket {
     char character;
 
-    long* indices_start;
-    int length;
-    long* indices_position;
+    long* indices;
+    long length;
+    long indices_position;
 };
 
 struct bucket_suite {
@@ -31,6 +31,8 @@ struct bucket_suite {
 struct ch_suite* right_pass(char* text);
 struct ch_suite* left_pass(struct ch_suite* text);
 struct bucket_suite* init_buckets(char *t);
+void buckets_place_sstar(struct ch_suite* ch_suite,
+			 struct bucket_suite* bucket_suite);
 int* suffix_array(char* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);

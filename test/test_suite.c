@@ -9,6 +9,7 @@ int main()
     right_pass_test();
     left_pass_test();
     init_buckets_test();
+    buckets_place_sstar_test();
 
     /* suffix_array_test(); */
     /* suffix_array_no_text_end_symbol_test(); */

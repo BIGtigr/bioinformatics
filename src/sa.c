@@ -66,22 +66,55 @@ struct bucket_suite* init_buckets(char *text) {
 	    struct bucket* b = &buckets[current_bucket];
 
 	    b->character = i + 'A';
-	    b->indices_start = calloc(characters[i], sizeof(long));
+	    b->indices = calloc(characters[i], sizeof(long));
 	    b->length = characters[i];
-	    b->indices_position = b->indices_start + b->length - 1;
+	    b->indices_position = b->length - 1;
 
 	    ++current_bucket;
 	}
     }
 
-    struct bucket bucket$ = { '$', NULL, 1, NULL };
+    struct bucket bucket$ = { '$', calloc(1, sizeof(long)), 1, 0 };
     buckets[current_bucket] = bucket$;
 
     struct bucket_suite* bucket_suite = malloc(sizeof(bucket_suite));
     bucket_suite->buckets = buckets;
-    bucket_suite->length = current_bucket;
+    bucket_suite->length = current_bucket + 1;
 
     return bucket_suite;
+}
+
+static struct bucket*
+find_bucket_for_ch(struct bucket_suite* bucket_suite, char c) {
+    for (int i = 0; i < bucket_suite->length; ++i) {
+	if (bucket_suite->buckets[i].character == c) {
+	    return &bucket_suite->buckets[i];
+	}
+    }
+
+    return NULL;
+}
+
+void
+buckets_place_sstar(struct ch_suite* ch_suite,
+		    struct bucket_suite* bucket_suite) {
+    for (int i = ch_suite->length - 1; i >= 0; --i) {
+	char c = ch_suite->text[i].ch;
+	enum char_type ct = ch_suite->text[i].ct;
+	
+	if (ct == SSTAR) {
+	    struct bucket* bucket = find_bucket_for_ch(bucket_suite, c);
+
+	    if (bucket == NULL) {
+		printf("Bucket for character %c not found.\n", c);
+		// TODO cleanup
+		exit(1);
+	    }
+
+	    bucket->indices[bucket->indices_position] = i;
+	    --bucket->indices_position;
+	}
+    }
 }
 
 /**
