@@ -3,12 +3,17 @@
 
 enum char_type { L, S, SSTAR };
 
+struct sl_classified_text {
+  struct ch* first;
+  int length;
+};
+
 struct ch {
     char ch;
     enum char_type ct;
 };
 
-struct ch* right_pass(char* text);
+struct sl_classified_text* right_pass(char* text);
 char* burrows_wheeler_transform(char* t, int* sa, int n);
 
 int* suffix_array(char* t);

@@ -26,7 +26,8 @@ void right_pass_test() {
 	{ '$', S }
     };
 
-    struct ch *coded_text = right_pass(t);
+    struct sl_classified_text* output = right_pass(t);
+    struct ch* coded_text = output->first;
 
     for (int i = 0; i < 15; ++i) {
 	if (coded_text_valid[i].ct != coded_text[i].ct ||

@@ -3,8 +3,13 @@
 # include "src.h"
 
 /* does not return len(ch), because len(ch) == strlen(text) */
-struct ch* right_pass(char *text) {
+struct sl_classified_text* right_pass(char *text) {
     struct ch* coded_text = malloc(sizeof(struct ch) * strlen(text));
+    struct sl_classified_text* sl_classified_text =
+      malloc(sizeof(struct sl_classified_text));
+
+    sl_classified_text->first = coded_text;
+    sl_classified_text->length = strlen(text);
     
     coded_text[strlen(text) - 1].ch = '$';
     coded_text[strlen(text) - 1].ct = S;
@@ -21,7 +26,7 @@ struct ch* right_pass(char *text) {
 	}
     }
 
-    return coded_text;
+    return sl_classified_text;
 }
 
 /**
