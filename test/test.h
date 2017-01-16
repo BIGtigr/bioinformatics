@@ -7,6 +7,7 @@ void bwt_no_text_end_symbol_test();
 void right_pass_test();
 void left_pass_test();
 void init_buckets_test();
+void find_sstar_substrings_test();
 void buckets_place_sstar_test();
 
 void suffix_array_test();

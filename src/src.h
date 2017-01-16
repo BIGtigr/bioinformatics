@@ -28,6 +28,18 @@ struct bucket_suite {
     int length;
 };
 
+struct sstar_substring {
+    int start;
+    int end;
+    long id;
+};
+
+struct sstar_substring_suite {
+    struct sstar_substring* substring;
+    int length;
+};
+
+struct sstar_substring_suite* find_sstar_substrings(struct ch_suite* ch_suite);
 struct ch_suite* right_pass(char* text);
 struct ch_suite* left_pass(struct ch_suite* text);
 struct bucket_suite* init_buckets(char *t);

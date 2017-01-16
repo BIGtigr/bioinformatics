@@ -84,6 +84,52 @@ struct bucket_suite* init_buckets(char *text) {
     return bucket_suite;
 }
 
+struct sstar_substring_suite*
+find_sstar_substrings(struct ch_suite* ch_suite)
+{
+    struct sstar_substring_suite* ss_suite =
+	malloc(sizeof(struct sstar_substring_suite));
+    struct sstar_substring* substring =
+	malloc(sizeof(struct sstar_substring));
+
+    substring[0].start = -1;
+    substring[0].end = -1;
+
+    int ss_counter = 0;
+
+    for (int i = 0; i < ch_suite->length; ++i) {
+	if (ch_suite->text[i].ct != SSTAR) {
+	    continue;
+	}
+
+	if (ch_suite->text[i].ch == '$') {
+	    ++ss_counter;
+	    substring = realloc(substring,
+				(ss_counter + 1) * sizeof(struct sstar_substring));
+	    substring[ss_counter].start = i;
+	    substring[ss_counter].end = i;
+	}
+
+	if (substring->start == -1) {
+	    substring[ss_counter].start = i;
+	} else {
+	    substring[ss_counter].end = i;
+
+	    // pronađen substring, napravi mjesta za novi
+	    ++ss_counter;
+	    substring = realloc(substring,
+				(ss_counter + 1) * sizeof(struct sstar_substring));
+	    substring[ss_counter].start = i;
+	    substring[ss_counter].end = -1;
+	}
+    }
+
+    ss_suite->length = ss_counter;
+    ss_suite->substring = substring;
+
+    return ss_suite;
+}
+
 static struct bucket*
 find_bucket_for_ch(struct bucket_suite* bucket_suite, char c) {
     for (int i = 0; i < bucket_suite->length; ++i) {

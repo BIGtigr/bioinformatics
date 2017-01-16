@@ -110,6 +110,44 @@ void init_buckets_test() {
 	   test_pass);
 }
 
+void find_sstar_substrings_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct ch_suite* ch_suite = left_pass(right_pass(t));
+    struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
+
+    struct sstar_substring ss_substring[5] = {
+	{ 3, 5 },
+	{ 5, 9 },
+	{ 9, 11 },
+	{ 11, 14 },
+	{ 14, 14 }
+    };
+    struct sstar_substring_suite* ss_suite_valid =
+	malloc(sizeof(struct sstar_substring_suite));
+
+    ss_suite_valid->substring = ss_substring;
+    ss_suite_valid->length = 5;
+
+    for (int i = 0; i < 5; ++i) {
+	int start = ss_suite->substring->start;
+	int end = ss_suite->substring->end;
+	int valid_start = ss_suite_valid->substring->start;
+	int valid_end = ss_suite_valid->substring->end;
+
+	if (start != valid_start || end != valid_end) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: find_sstar_substrings_test(): %d\n",
+	   test_pass);
+
+    free(ss_suite_valid);
+}
+
 void buckets_place_sstar_test() {
     int test_pass = 1;
 
