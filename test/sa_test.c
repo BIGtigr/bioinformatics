@@ -26,8 +26,8 @@ void right_pass_test() {
 	{ '$', S }
     };
 
-    struct sl_classified_text* output = right_pass(t);
-    struct ch* coded_text = output->first;
+    struct ch_suite* output = right_pass(t);
+    struct ch* coded_text = output->text;
 
     for (int i = 0; i < 15; ++i) {
 	if (coded_text_valid[i].ct != coded_text[i].ct ||
@@ -37,6 +37,76 @@ void right_pass_test() {
     }
 
     printf("sa_test.c :: right_pass_test(): %d\n",
+	   test_pass);
+}
+
+void left_pass_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct ch coded_text_valid[15] = {
+	{ 'B', S },
+	{ 'I', S },
+	{ 'O', L },
+	{ 'I', SSTAR },
+	{ 'N', L },
+	{ 'F', SSTAR },
+	{ 'O', S },
+	{ 'R', L },
+	{ 'M', L },
+	{ 'A', SSTAR },
+	{ 'T', L },
+	{ 'I', SSTAR },
+	{ 'K', L },
+	{ 'A', L },
+	{ '$', SSTAR }
+    };
+
+    struct ch_suite* output = right_pass(t);
+    output = left_pass(output);
+    struct ch* coded_text = output->text;
+
+    for (int i = 0; i < 15; ++i) {
+	if (coded_text_valid[i].ct != coded_text[i].ct ||
+	    coded_text_valid[i].ch != coded_text[i].ch) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: left_pass_test(): %d\n",
+	   test_pass);
+}
+
+void init_buckets_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct bucket* buckets = init_buckets(t);
+
+    struct bucket buckets_valid[11] = {
+	{ 'A', NULL, 2, NULL },
+	{ 'B', NULL, 1, NULL },
+	{ 'F', NULL, 1, NULL },
+	{ 'I', NULL, 3, NULL },
+	{ 'K', NULL, 1, NULL },
+	{ 'M', NULL, 1, NULL },
+	{ 'N', NULL, 1, NULL },
+	{ 'O', NULL, 2, NULL },
+	{ 'R', NULL, 1, NULL },
+	{ 'T', NULL, 1, NULL },
+	{ '$', NULL, 1, NULL }
+    };
+
+    for (int i = 0; i < 11; ++i) {
+	if (buckets[i].character != buckets_valid[i].character ||
+	    buckets[i].length != buckets_valid[i].length) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: init_bucket_test(): %d\n",
 	   test_pass);
 }
 

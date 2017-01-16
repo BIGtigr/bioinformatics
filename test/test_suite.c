@@ -7,6 +7,8 @@ int main()
     bwt_no_text_end_symbol_test();
 
     right_pass_test();
+    left_pass_test();
+    init_buckets_test();
 
     /* suffix_array_test(); */
     /* suffix_array_no_text_end_symbol_test(); */

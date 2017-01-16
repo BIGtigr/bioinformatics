@@ -5,6 +5,8 @@ void burrows_wheeler_transform_test();
 void bwt_no_text_end_symbol_test();
 
 void right_pass_test();
+void left_pass_test();
+void init_buckets_test();
 
 void suffix_array_test();
 void suffix_array_no_text_end_symbol_test();
