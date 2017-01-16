@@ -1,4 +1,5 @@
 # include <stdio.h>
+# include <string.h>
 # include "../src/src.h"
 # include "test.h"
 

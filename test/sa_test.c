@@ -3,6 +3,41 @@
 # include "../src/src.h"
 # include "test.h"
 
+void right_pass_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct ch sa_valid[15] = {
+	{ 'B', S },
+	{ 'I', S },
+	{ 'O', L },
+	{ 'I', S },
+	{ 'N', L },
+	{ 'F', S },
+	{ 'O', S },
+	{ 'R', L },
+	{ 'M', L },
+	{ 'A', S },
+	{ 'T', L },
+	{ 'I', S },
+	{ 'K', L },
+	{ 'A', L },
+	{ '$', S }
+    };
+
+    struct ch *sa = right_pass(t);
+
+    for (int i = 0; i < 15; ++i) {
+	if (sa_valid[i].ct != sa[i].ct || sa_valid[i].ch != sa[i].ch) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: right_pass_test(): %d\n",
+	   test_pass);
+}
+
 void suffix_array_test() {
     int test_pass = 1;
 
