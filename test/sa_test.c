@@ -8,7 +8,7 @@ void right_pass_test() {
 
     char* t = "BIOINFORMATIKA$";
 
-    struct ch sa_valid[15] = {
+    struct ch coded_text_valid[15] = {
 	{ 'B', S },
 	{ 'I', S },
 	{ 'O', L },
@@ -26,10 +26,11 @@ void right_pass_test() {
 	{ '$', S }
     };
 
-    struct ch *sa = right_pass(t);
+    struct ch *coded_text = right_pass(t);
 
     for (int i = 0; i < 15; ++i) {
-	if (sa_valid[i].ct != sa[i].ct || sa_valid[i].ch != sa[i].ch) {
+	if (coded_text_valid[i].ct != coded_text[i].ct ||
+	    coded_text_valid[i].ch != coded_text[i].ch) {
 	    test_pass = 0;
 	}
     }
