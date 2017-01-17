@@ -45,6 +45,7 @@ struct ch_suite* left_pass(struct ch_suite* text);
 struct bucket_suite* init_buckets(char *t);
 void buckets_place_sstar(struct ch_suite* ch_suite,
 			 struct bucket_suite* bucket_suite);
+void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite); 
 int* suffix_array(char* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);

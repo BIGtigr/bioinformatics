@@ -86,17 +86,17 @@ void init_buckets_test() {
     struct bucket* buckets = init_buckets(t)->buckets;
 
     struct bucket buckets_valid[11] = {
-	{ 'A', NULL, 2, NULL },
-	{ 'B', NULL, 1, NULL },
-	{ 'F', NULL, 1, NULL },
-	{ 'I', NULL, 3, NULL },
-	{ 'K', NULL, 1, NULL },
-	{ 'M', NULL, 1, NULL },
-	{ 'N', NULL, 1, NULL },
-	{ 'O', NULL, 2, NULL },
-	{ 'R', NULL, 1, NULL },
-	{ 'T', NULL, 1, NULL },
-	{ '$', NULL, 1, NULL }
+	{ '$', NULL, 1, -1 },
+	{ 'A', NULL, 2, -1 },
+	{ 'B', NULL, 1, -1 },
+	{ 'F', NULL, 1, -1 },
+	{ 'I', NULL, 3, -1 },
+	{ 'K', NULL, 1, -1 },
+	{ 'M', NULL, 1, -1 },
+	{ 'N', NULL, 1, -1 },
+	{ 'O', NULL, 2, -1 },
+	{ 'R', NULL, 1, -1 },
+	{ 'T', NULL, 1, -1 }
     };
 
     for (int i = 0; i < 11; ++i) {
@@ -119,12 +119,13 @@ void find_sstar_substrings_test() {
     struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
 
     struct sstar_substring ss_substring[5] = {
-	{ 3, 5 },
-	{ 5, 9 },
-	{ 9, 11 },
-	{ 11, 14 },
-	{ 14, 14 }
+	{ 3, 5, -1 },
+	{ 5, 9, -1 },
+	{ 9, 11, -1 },
+	{ 11, 14, -1 },
+	{ 14, 14, -1 }
     };
+
     struct sstar_substring_suite* ss_suite_valid =
 	malloc(sizeof(struct sstar_substring_suite));
 
@@ -132,10 +133,10 @@ void find_sstar_substrings_test() {
     ss_suite_valid->length = 5;
 
     for (int i = 0; i < 5; ++i) {
-	int start = ss_suite->substring->start;
-	int end = ss_suite->substring->end;
-	int valid_start = ss_suite_valid->substring->start;
-	int valid_end = ss_suite_valid->substring->end;
+	int start = ss_suite->substring[i].start;
+	int end = ss_suite->substring[i].end;
+	int valid_start = ss_suite_valid->substring[i].start;
+	int valid_end = ss_suite_valid->substring[i].end;
 
 	if (start != valid_start || end != valid_end) {
 	    test_pass = 0;
@@ -143,6 +144,43 @@ void find_sstar_substrings_test() {
     }
 
     printf("sa_test.c :: find_sstar_substrings_test(): %d\n",
+	   test_pass);
+}
+
+void name_ss_substrings_test() {
+    int test_pass = 1;
+
+    char* t = "MMISSISSIIPPII$";
+ 
+    struct sstar_substring ss_substring[4] = {
+	{ 2, 5, 1 },
+	{ 5, 8, 1 },
+	{ 8, 14, 2 },
+	{ 14, 14, 3 }
+    };
+
+    struct sstar_substring_suite* ss_suite_valid =
+	malloc(sizeof(struct sstar_substring_suite));
+
+    ss_suite_valid->substring = ss_substring;
+    ss_suite_valid->length = 5;
+
+    struct sstar_substring_suite* ss_suite =
+	find_sstar_substrings(left_pass(right_pass(t)));
+    
+    name_sstar_substrings(t, ss_suite); 
+
+    for (int i = 0; i < 4; ++i) {
+	struct sstar_substring s1 = ss_suite_valid->substring[i];
+	struct sstar_substring s2 = ss_suite->substring[i];
+
+	if (s1.id != s2.id || s1.start != s2.start ||
+	    s1.end != s2.end) {
+	    test_pass = 0;
+	}
+    }
+
+    printf("sa_test.c :: name_sstar_substrings_test(): %d\n",
 	   test_pass);
 
     free(ss_suite_valid);
@@ -159,13 +197,13 @@ void buckets_place_sstar_test() {
 
     buckets_place_sstar(ch_suite, bucket_suite);
 
-    long indicesI[] = { -1, 3, 2 };
-    long indicesF[] = { 5 };
-    long indicesA[] = { -1, 9 };
     long indices$[] = { 14 };
+    long indicesA[] = { 0, 9 };
+    long indicesF[] = { 5 };
+    long indicesI[] = { 0, 3, 11 };
 
     struct bucket buckets_valid[11] = {
-	// znak, popis indeksa S* ili -1, broj pojavljivanja znaka u tekstu, pozicija gdje će zapisati sljedeći indeks
+	{ '$', indices$, 1, -1 },
 	{ 'A', indicesA, 2, 0 },
 	{ 'B', malloc(sizeof(long)), 1, 0 },
 	{ 'F', indicesF, 1, -1 },
@@ -176,26 +214,52 @@ void buckets_place_sstar_test() {
 	{ 'O', malloc(sizeof(long) * 2), 2, 1 },
 	{ 'R', malloc(sizeof(long)), 1, 0 },
 	{ 'T', malloc(sizeof(long)), 1, 0 },
-	{ '$', indices$, 1, -1 }
     };
 
     for (int i = 0; i < 11; ++i) {
 	struct bucket b1 = buckets[i];
 	struct bucket b2 = buckets_valid[i];
-	long i1 = b1.indices_position;
-	long i2 = b2.indices_position;
 
-	if (i1 == i2 && b1.character == b2.character) {
-	    continue;
-	}
-
-	if (b1.character != b2.character ||
-	    b1.length != b2.length ||
-	    b1.indices[b1.indices_position] !=
-	    b2.indices[b2.indices_position]) {
+	// check single fields of bucket
+	if (b1.character != b2.character || b1.length != b2.length ||
+	    b1.indices_position != b2.indices_position) {
 	    test_pass = 0;
 	}
+
+	long* b1_indices = b1.indices;
+	long* b2_indices = b2.indices;
+
+	// check bucket.indices array
+	for (int j = 0; j < b1.length; ++j) {
+	    if (b1_indices[j] != b2_indices[j]) {
+		test_pass = 0;
+	    }
+	}
+	   
     }
+
+    printf("sa_test.c :: buckets_place_sstar_test(): %d\n",
+	   test_pass);
+}
+
+void induce_l_suffixes_test() {
+    int test_pass = 0;
+
+    long indicesI[] = { -1, 2, 3 };
+    long indicesF[] = { 5 };
+    long indicesA[] = { -1, 9 };
+    long indices$[] = { 14 };
+
+    struct bucket bucket_valid[11] = {
+	{ 'F', indicesF, 1, -1 },
+	{ 'I', indicesI, 3, 0 },
+	{ 'K', malloc(sizeof(long)), 1, 0 },
+	{ 'M', malloc(sizeof(long)), 1, 0 },
+	{ 'N', malloc(sizeof(long)), 1, 0 },
+	{ 'O', malloc(sizeof(long) * 2), 2, 1 },
+	{ 'R', malloc(sizeof(long)), 1, 0 },
+	{ 'T', malloc(sizeof(long)), 1, 0 }
+    };
 
     printf("sa_test.c :: buckets_place_sstar_test(): %d\n",
 	   test_pass);

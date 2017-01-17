@@ -60,6 +60,10 @@ struct bucket_suite* init_buckets(char *text) {
 
     struct bucket* buckets = malloc(sizeof(struct bucket) * (counter + 1));
     int current_bucket = 0;
+    struct bucket bucket$ = { '$', calloc(1, sizeof(long)), 1, 0 };
+
+    buckets[current_bucket] = bucket$;
+    ++current_bucket;
 
     for (int i = 0; i < alphabet_size; ++i) {
 	if (characters[i] != 0) {
@@ -74,9 +78,6 @@ struct bucket_suite* init_buckets(char *text) {
 	}
     }
 
-    struct bucket bucket$ = { '$', calloc(1, sizeof(long)), 1, 0 };
-    buckets[current_bucket] = bucket$;
-
     struct bucket_suite* bucket_suite = malloc(sizeof(bucket_suite));
     bucket_suite->buckets = buckets;
     bucket_suite->length = current_bucket + 1;
@@ -85,49 +86,78 @@ struct bucket_suite* init_buckets(char *text) {
 }
 
 struct sstar_substring_suite*
-find_sstar_substrings(struct ch_suite* ch_suite)
-{
-    struct sstar_substring_suite* ss_suite =
-	malloc(sizeof(struct sstar_substring_suite));
-    struct sstar_substring* substring =
-	malloc(sizeof(struct sstar_substring));
+find_sstar_substrings(struct ch_suite* ch_suite) {
+    int n = 0;
 
-    substring[0].start = -1;
-    substring[0].end = -1;
+    for (int i = 0; i < ch_suite->length; ++i) {
+	if (ch_suite->text[i].ct == SSTAR) {
+	    ++n;
+	}
+    }
 
-    int ss_counter = 0;
+    int ss_index = -1;
+    struct sstar_substring* ss_substrings = malloc(sizeof(struct sstar_substring) * n);
 
     for (int i = 0; i < ch_suite->length; ++i) {
 	if (ch_suite->text[i].ct != SSTAR) {
 	    continue;
+	} else {
+	    ++ss_index;
+	}
+
+	if (ss_index == 0) {
+	    ss_substrings[ss_index].start = i;
+	} else {
+	    ss_substrings[ss_index].start = i;
+	    ss_substrings[ss_index - 1].end = i;
+	    ss_substrings[ss_index - 1].id = -1;
 	}
 
 	if (ch_suite->text[i].ch == '$') {
-	    ++ss_counter;
-	    substring = realloc(substring,
-				(ss_counter + 1) * sizeof(struct sstar_substring));
-	    substring[ss_counter].start = i;
-	    substring[ss_counter].end = i;
-	}
-
-	if (substring->start == -1) {
-	    substring[ss_counter].start = i;
-	} else {
-	    substring[ss_counter].end = i;
-
-	    // pronađen substring, napravi mjesta za novi
-	    ++ss_counter;
-	    substring = realloc(substring,
-				(ss_counter + 1) * sizeof(struct sstar_substring));
-	    substring[ss_counter].start = i;
-	    substring[ss_counter].end = -1;
+	    ss_substrings[ss_index].end = i;
+	    ss_substrings[ss_index].id = -1;
 	}
     }
 
-    ss_suite->length = ss_counter;
-    ss_suite->substring = substring;
+    struct sstar_substring_suite* ss = malloc(sizeof(struct sstar_substring_suite));
+    ss->substring = ss_substrings;
+    ss->length = n;
 
-    return ss_suite;
+    return ss;
+}
+
+void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite) {
+    int current_id = 1;
+
+    for (int i = 0; i < ss_suite->length - 1; ++i) {
+	struct sstar_substring* ss_i = &ss_suite->substring[i];
+
+	if (ss_i->id != -1) {
+	    continue;
+	}
+
+	ss_i->id = current_id;
+	++current_id;
+
+	char* s1 = text + ss_i->start;
+	int length = ss_i->end + 1 - ss_i->start;
+	
+	for (int j = i + 1; j < ss_suite->length; ++j) {
+	    struct sstar_substring* ss_j = &ss_suite->substring[j];
+
+	    if (ss_j->id != -1) {
+		continue;
+	    }
+
+	    char* s2 = text + ss_j->start;
+
+	    if (strncmp(s1, s2, length) == 0) {
+		ss_j->id = ss_i->id;
+	    }
+	}
+    }
+
+    ss_suite->substring[ss_suite->length - 1].id = current_id;
 }
 
 static struct bucket*
@@ -161,6 +191,10 @@ buckets_place_sstar(struct ch_suite* ch_suite,
 	    --bucket->indices_position;
 	}
     }
+}
+
+void
+induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *buckets) {
 }
 
 /**
