@@ -86,7 +86,7 @@ struct bucket_suite* init_buckets(char *text) {
 
     struct bucket_suite* bucket_suite = malloc(sizeof(bucket_suite));
     bucket_suite->buckets = buckets;
-    bucket_suite->length = current_bucket + 1;
+    bucket_suite->length = current_bucket;
 
     return bucket_suite;
 }
