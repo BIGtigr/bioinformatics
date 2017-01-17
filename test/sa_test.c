@@ -336,6 +336,72 @@ void induce_l_suffixes_test() {
 	   test_pass);
 }
 
+// identical as induce_s_suffixes_test, except expected indices arrays are different
+void induce_s_suffixes_test() {
+    int test_pass = 1;
+
+    char* t = "BIOINFORMATIKA$";
+
+    struct bucket_suite* bucket_suite = init_buckets(t);
+    struct bucket* buckets = bucket_suite->buckets;
+    struct ch_suite* ch_suite = left_pass(right_pass(t));
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+
+    long indices$[] = { 14 };
+    long indicesA[] = { 13, 9 };
+    long indicesB[] = { 0 };
+    long indicesF[] = { 5 };
+    long indicesI[] = { 11, 3, 1 };
+    long indicesK[] = { 12 };
+    long indicesM[] = { 8 };
+    long indicesN[] = { 4 };
+    long indicesO[] = { 2, 6 };
+    long indicesR[] = { 7 };
+    long indicesT[] = { 10 };
+
+    struct bucket buckets_valid[11] = {
+	{ '$', indices$, 1, 0 },
+	{ 'A', indicesA, 2, -1 },
+	{ 'B', indicesB, 1, -1 },
+	{ 'F', indicesF, 1, -1 },
+	{ 'I', indicesI, 3, -1 },
+	{ 'K', indicesK, 1, 1 },
+	{ 'M', indicesM, 1, 1 },
+	{ 'N', indicesN, 1, 1 },
+	{ 'O', indicesO, 2, -1 },
+	{ 'R', indicesR, 1, 1 },
+	{ 'T', indicesT, 1, 1 },
+    };
+
+    for (int i = 0; i < 11; ++i) {
+	struct bucket b1 = buckets[i];
+	struct bucket b2 = buckets_valid[i];
+
+	// check single fields of bucket
+	if (b1.character != b2.character || b1.length != b2.length ||
+	    b1.indices_position != b2.indices_position) {
+	    test_pass = 0;
+	}
+
+	long* b1_indices = b1.indices;
+	long* b2_indices = b2.indices;
+
+	// check bucket.indices array
+	for (int j = 0; j < b1.length; ++j) {
+	    if (b1_indices[j] != b2_indices[j]) {
+		printf("%c: got %ld, expected %ld\n", b1.character, b1_indices[j], b2_indices[j]);
+		test_pass = 0;
+	    }
+	}
+	   
+    }
+
+    printf("sa_test.c :: induce_s_suffixes_test(): %d\n",
+	   test_pass);
+}
+
 void suffix_array_test() {
     int test_pass = 1;
 

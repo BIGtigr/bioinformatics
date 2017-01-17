@@ -11,6 +11,7 @@ void find_sstar_substrings_test();
 void buckets_place_sstar_test();
 void name_ss_substrings_test();
 void induce_l_suffixes_test();
+void induce_s_suffixes_test();
 
 void suffix_array_test();
 void suffix_array_no_text_end_symbol_test();
