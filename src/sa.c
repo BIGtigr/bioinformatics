@@ -60,7 +60,8 @@ struct bucket_suite* init_buckets(char *text) {
 
     struct bucket* buckets = malloc(sizeof(struct bucket) * (counter + 1));
     int current_bucket = 0;
-    struct bucket bucket$ = { '$', calloc(1, sizeof(long)), 1, 0 };
+    struct bucket bucket$ = { '$', malloc(sizeof(long)), 1, 0 };
+    bucket$.indices[0] = -1;
 
     buckets[current_bucket] = bucket$;
     ++current_bucket;
@@ -70,9 +71,14 @@ struct bucket_suite* init_buckets(char *text) {
 	    struct bucket* b = &buckets[current_bucket];
 
 	    b->character = i + 'A';
-	    b->indices = calloc(characters[i], sizeof(long));
+	    b->indices = malloc(sizeof(long) * characters[i]);
 	    b->length = characters[i];
 	    b->indices_position = b->length - 1;
+
+	    // initialize b->indices array elements to -1
+	    for (int j = 0; j < b->length; ++j) {
+		b->indices[j] = -1;
+	    }
 
 	    ++current_bucket;
 	}

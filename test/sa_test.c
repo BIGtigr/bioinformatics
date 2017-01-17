@@ -85,24 +85,44 @@ void init_buckets_test() {
 
     struct bucket* buckets = init_buckets(t)->buckets;
 
+    long b$_indices[] = { -1 };
+    long bA_indices[] = { -1, -1 };
+    long bB_indices[] = { -1 };
+    long bF_indices[] = { -1 };
+    long bI_indices[] = { -1, -1, -1 };
+    long bK_indices[] = { -1 };
+    long bM_indices[] = { -1 };
+    long bN_indices[] = { -1 };
+    long bO_indices[] = { -1, -1 };
+    long bR_indices[] = { -1 };
+    long bT_indices[] = { -1 };
+
     struct bucket buckets_valid[11] = {
-	{ '$', NULL, 1, -1 },
-	{ 'A', NULL, 2, -1 },
-	{ 'B', NULL, 1, -1 },
-	{ 'F', NULL, 1, -1 },
-	{ 'I', NULL, 3, -1 },
-	{ 'K', NULL, 1, -1 },
-	{ 'M', NULL, 1, -1 },
-	{ 'N', NULL, 1, -1 },
-	{ 'O', NULL, 2, -1 },
-	{ 'R', NULL, 1, -1 },
-	{ 'T', NULL, 1, -1 }
+	{ '$', b$_indices, 1, 0 },
+	{ 'A', bA_indices, 2, 1 },
+	{ 'B', bB_indices, 1, 0 },
+	{ 'F', bF_indices, 1, 0 },
+	{ 'I', bI_indices, 3, 2 },
+	{ 'K', bK_indices, 1, 0 },
+	{ 'M', bM_indices, 1, 0 },
+	{ 'N', bN_indices, 1, 0 },
+	{ 'O', bO_indices, 2, 1 },
+	{ 'R', bR_indices, 1, 0 },
+	{ 'T', bT_indices, 1, 0 }
     };
 
     for (int i = 0; i < 11; ++i) {
 	if (buckets[i].character != buckets_valid[i].character ||
-	    buckets[i].length != buckets_valid[i].length) {
+	    buckets[i].length != buckets_valid[i].length ||
+	    buckets[i].indices_position != buckets_valid[i].indices_position) {
 	    test_pass = 0;
+	}
+
+	for (int j = 0; j < buckets[i].length; ++j) {
+	    if (buckets[i].indices[j] != buckets_valid[i].indices[j]) {
+		printf("%c %ld %ld\n", buckets[i].character, buckets[i].indices[j], buckets_valid[i].indices[j]);
+		test_pass = 0;
+	    }
 	}
     }
 
@@ -198,22 +218,29 @@ void buckets_place_sstar_test() {
     buckets_place_sstar(ch_suite, bucket_suite);
 
     long indices$[] = { 14 };
-    long indicesA[] = { 0, 9 };
+    long indicesA[] = { -1, 9 };
+    long indicesB[] = { -1 };
     long indicesF[] = { 5 };
-    long indicesI[] = { 0, 3, 11 };
+    long indicesI[] = { -1, 3, 11 };
+    long indicesK[] = { -1 };
+    long indicesM[] = { -1 };
+    long indicesN[] = { -1 };
+    long indicesO[] = { -1, -1 };
+    long indicesR[] = { -1 };
+    long indicesT[] = { -1 };
 
     struct bucket buckets_valid[11] = {
 	{ '$', indices$, 1, -1 },
 	{ 'A', indicesA, 2, 0 },
-	{ 'B', malloc(sizeof(long)), 1, 0 },
+	{ 'B', indicesB, 1, 0 },
 	{ 'F', indicesF, 1, -1 },
 	{ 'I', indicesI, 3, 0 },
-	{ 'K', malloc(sizeof(long)), 1, 0 },
-	{ 'M', malloc(sizeof(long)), 1, 0 },
-	{ 'N', malloc(sizeof(long)), 1, 0 },
-	{ 'O', malloc(sizeof(long) * 2), 2, 1 },
-	{ 'R', malloc(sizeof(long)), 1, 0 },
-	{ 'T', malloc(sizeof(long)), 1, 0 },
+	{ 'K', indicesK, 1, 0 },
+	{ 'M', indicesM, 1, 0 },
+	{ 'N', indicesN, 1, 0 },
+	{ 'O', indicesO, 2, 1 },
+	{ 'R', indicesR, 1, 0 },
+	{ 'T', indicesT, 1, 0 },
     };
 
     for (int i = 0; i < 11; ++i) {
@@ -232,6 +259,7 @@ void buckets_place_sstar_test() {
 	// check bucket.indices array
 	for (int j = 0; j < b1.length; ++j) {
 	    if (b1_indices[j] != b2_indices[j]) {
+		printf("%c: got %ld, expected %ld\n", b1.character, b1_indices[j], b2_indices[j]);
 		test_pass = 0;
 	    }
 	}
