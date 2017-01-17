@@ -1,3 +1,4 @@
+# include <assert.h>
 # include <stdio.h>
 # include <string.h>
 # include "../src/src.h"
@@ -295,17 +296,17 @@ void induce_l_suffixes_test() {
     long indicesT[] = { 10 };
 
     struct bucket buckets_valid[11] = {
-	{ '$', indices$, 1, -1 },
-	{ 'A', indicesA, 2, 0 },
+	{ '$', indices$, 1, 0 },
+	{ 'A', indicesA, 2, 1 },
 	{ 'B', indicesB, 1, 0 },
-	{ 'F', indicesF, 1, -1 },
+	{ 'F', indicesF, 1, 0 },
 	{ 'I', indicesI, 3, 0 },
-	{ 'K', indicesK, 1, 0 },
-	{ 'M', indicesM, 1, 0 },
-	{ 'N', indicesN, 1, 0 },
+	{ 'K', indicesK, 1, 1 },
+	{ 'M', indicesM, 1, 1 },
+	{ 'N', indicesN, 1, 1 },
 	{ 'O', indicesO, 2, 1 },
-	{ 'R', indicesR, 1, 0 },
-	{ 'T', indicesT, 1, 0 },
+	{ 'R', indicesR, 1, 1 },
+	{ 'T', indicesT, 1, 1 },
     };
 
     for (int i = 0; i < 11; ++i) {

@@ -1,3 +1,4 @@
+# include <assert.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
@@ -200,7 +201,35 @@ buckets_place_sstar(struct ch_suite* ch_suite,
 }
 
 void
-induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *buckets) {
+induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) {
+    struct ch* text = ch_suite->text;
+
+    // reset buckets' indices_position to 0;
+    for (int i = 0; i < bucket_suite->length; ++i) {
+	bucket_suite->buckets[i].indices_position = 0;
+    }
+
+    for (int i = 0; i < bucket_suite->length; ++i) {
+	struct bucket* b = &bucket_suite->buckets[i];
+
+	for (int j = 0; j < b->length; ++j) {
+	    // skip uninitialized elements in bucket->indices
+	    if (b->indices[j] == -1) {
+		continue;
+	    }
+
+	    struct ch* current_ch = &text[b->indices[j] - 1];
+
+	    if (current_ch->ct == L) {
+		struct bucket* dest_b = find_bucket_for_ch(bucket_suite, current_ch->ch);
+
+		assert(dest_b->indices_position != -1);
+
+		dest_b->indices[dest_b->indices_position] = b->indices[j] - 1;
+		++dest_b->indices_position;
+	    }
+	}
+    }
 }
 
 /**
