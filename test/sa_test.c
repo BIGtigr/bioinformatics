@@ -280,6 +280,7 @@ void induce_l_suffixes_test() {
     struct ch_suite* ch_suite = left_pass(right_pass(t));
 
     buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
 
     long indices$[] = { 14 };
     long indicesA[] = { 13, 9 };
@@ -330,7 +331,7 @@ void induce_l_suffixes_test() {
 	   
     }
 
-    printf("sa_test.c :: buckets_induce_l_suffixes_test(): %d\n",
+    printf("sa_test.c :: induce_l_suffixes_test(): %d\n",
 	   test_pass);
 }
 

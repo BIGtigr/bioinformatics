@@ -46,6 +46,8 @@ struct bucket_suite* init_buckets(char *t);
 void buckets_place_sstar(struct ch_suite* ch_suite,
 			 struct bucket_suite* bucket_suite);
 void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite); 
+void induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *buckets);
+
 int* suffix_array(char* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);
