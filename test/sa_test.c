@@ -271,25 +271,66 @@ void buckets_place_sstar_test() {
 }
 
 void induce_l_suffixes_test() {
-    int test_pass = 0;
+    int test_pass = 1;
 
-    long indicesI[] = { -1, 2, 3 };
-    long indicesF[] = { 5 };
-    long indicesA[] = { -1, 9 };
+    char* t = "BIOINFORMATIKA$";
+
+    struct bucket_suite* bucket_suite = init_buckets(t);
+    struct bucket* buckets = bucket_suite->buckets;
+    struct ch_suite* ch_suite = left_pass(right_pass(t));
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+
     long indices$[] = { 14 };
+    long indicesA[] = { 13, 9 };
+    long indicesB[] = { -1 };
+    long indicesF[] = { 5 };
+    long indicesI[] = { -1, 3, 11 };
+    long indicesK[] = { 12 };
+    long indicesM[] = { 8 };
+    long indicesN[] = { 4 };
+    long indicesO[] = { 2, -1 };
+    long indicesR[] = { 7 };
+    long indicesT[] = { 10 };
 
-    struct bucket bucket_valid[11] = {
+    struct bucket buckets_valid[11] = {
+	{ '$', indices$, 1, -1 },
+	{ 'A', indicesA, 2, 0 },
+	{ 'B', indicesB, 1, 0 },
 	{ 'F', indicesF, 1, -1 },
 	{ 'I', indicesI, 3, 0 },
-	{ 'K', malloc(sizeof(long)), 1, 0 },
-	{ 'M', malloc(sizeof(long)), 1, 0 },
-	{ 'N', malloc(sizeof(long)), 1, 0 },
-	{ 'O', malloc(sizeof(long) * 2), 2, 1 },
-	{ 'R', malloc(sizeof(long)), 1, 0 },
-	{ 'T', malloc(sizeof(long)), 1, 0 }
+	{ 'K', indicesK, 1, 0 },
+	{ 'M', indicesM, 1, 0 },
+	{ 'N', indicesN, 1, 0 },
+	{ 'O', indicesO, 2, 1 },
+	{ 'R', indicesR, 1, 0 },
+	{ 'T', indicesT, 1, 0 },
     };
 
-    printf("sa_test.c :: buckets_place_sstar_test(): %d\n",
+    for (int i = 0; i < 11; ++i) {
+	struct bucket b1 = buckets[i];
+	struct bucket b2 = buckets_valid[i];
+
+	// check single fields of bucket
+	if (b1.character != b2.character || b1.length != b2.length ||
+	    b1.indices_position != b2.indices_position) {
+	    test_pass = 0;
+	}
+
+	long* b1_indices = b1.indices;
+	long* b2_indices = b2.indices;
+
+	// check bucket.indices array
+	for (int j = 0; j < b1.length; ++j) {
+	    if (b1_indices[j] != b2_indices[j]) {
+		printf("%c: got %ld, expected %ld\n", b1.character, b1_indices[j], b2_indices[j]);
+		test_pass = 0;
+	    }
+	}
+	   
+    }
+
+    printf("sa_test.c :: buckets_induce_l_suffixes_test(): %d\n",
 	   test_pass);
 }
 

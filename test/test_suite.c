@@ -12,6 +12,7 @@ int main()
     find_sstar_substrings_test(); 
     buckets_place_sstar_test();
     name_ss_substrings_test();
+    induce_l_suffixes_test();
 
     /* suffix_array_test(); */
     /* suffix_array_no_text_end_symbol_test(); */
