@@ -348,6 +348,7 @@ void induce_s_suffixes_test() {
 
     buckets_place_sstar(ch_suite, bucket_suite);
     induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
 
     long indices$[] = { 14 };
     long indicesA[] = { 13, 9 };
@@ -363,16 +364,16 @@ void induce_s_suffixes_test() {
 
     struct bucket buckets_valid[11] = {
 	{ '$', indices$, 1, 0 },
-	{ 'A', indicesA, 2, -1 },
+	{ 'A', indicesA, 2, 0 },
 	{ 'B', indicesB, 1, -1 },
 	{ 'F', indicesF, 1, -1 },
 	{ 'I', indicesI, 3, -1 },
-	{ 'K', indicesK, 1, 1 },
-	{ 'M', indicesM, 1, 1 },
-	{ 'N', indicesN, 1, 1 },
-	{ 'O', indicesO, 2, -1 },
-	{ 'R', indicesR, 1, 1 },
-	{ 'T', indicesT, 1, 1 },
+	{ 'K', indicesK, 1, 0 },
+	{ 'M', indicesM, 1, 0 },
+	{ 'N', indicesN, 1, 0 },
+	{ 'O', indicesO, 2, 0 },
+	{ 'R', indicesR, 1, 0 },
+	{ 'T', indicesT, 1, 0 },
     };
 
     for (int i = 0; i < 11; ++i) {
@@ -382,6 +383,8 @@ void induce_s_suffixes_test() {
 	// check single fields of bucket
 	if (b1.character != b2.character || b1.length != b2.length ||
 	    b1.indices_position != b2.indices_position) {
+	    printf("%c: expected %ld, got %ld",
+		   b2.character, b2.indices_position, b1.indices_position);
 	    test_pass = 0;
 	}
 
@@ -391,7 +394,8 @@ void induce_s_suffixes_test() {
 	// check bucket.indices array
 	for (int j = 0; j < b1.length; ++j) {
 	    if (b1_indices[j] != b2_indices[j]) {
-		printf("%c: got %ld, expected %ld\n", b1.character, b1_indices[j], b2_indices[j]);
+		printf("%c: got %ld, expected %ld\n",
+		       b1.character, b1_indices[j], b2_indices[j]);
 		test_pass = 0;
 	    }
 	}
