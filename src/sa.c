@@ -1,22 +1,23 @@
 # include <assert.h>
+# include <stdbool.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
-# include "src.h"
 
-/* does not return len(ch), because len(ch) == strlen(text) */
-struct ch_suite* right_pass(char *text) {
-    struct ch* coded_text = malloc(sizeof(struct ch) * strlen(text));
-    struct ch_suite* ch_suite =
-      malloc(sizeof(struct ch_suite));
+# include "src.h"
+# include "util.h"
+
+struct ch_suite* right_pass(long *text, long text_length) {
+    struct ch* coded_text = malloc(sizeof(struct ch) * text_length);
+    struct ch_suite* ch_suite = malloc(sizeof(struct ch_suite));
 
     ch_suite->text = coded_text;
-    ch_suite->length = strlen(text);
+    ch_suite->length = text_length;
     
-    coded_text[strlen(text) - 1].ch = '$';
-    coded_text[strlen(text) - 1].ct = S;
+    coded_text[text_length - 1].ch = code_char('$');
+    coded_text[text_length - 1].ct = S;
     
-    for (int i = strlen(text) - 2; i >= 0; --i) {
+    for (int i = text_length - 2; i >= 0; --i) {
 	coded_text[i].ch = text[i];
 	char c1 = coded_text[i].ch;
 	char c2 = coded_text[i + 1].ch;
@@ -44,12 +45,24 @@ struct ch_suite* left_pass(struct ch_suite* ct) {
     return ct;
 }
 
-struct bucket_suite* init_buckets(char *text) {
-    int alphabet_size = 26;
-    long *characters = calloc(alphabet_size + 1, sizeof(long*));
 
-    for (unsigned int i = 0; i < strlen(text) - 1; ++i) {
-	++characters[text[i] - 'A']; 
+/**
+ * args:
+ *   text: coded text to be put into buckets; must end with '$'/0
+ *   text_length: length of text array
+ *   alphabet_size: number of different characters/codes in text; *do* account for '$'/0
+ *
+ *   WARNING: when running init_buckets for initial text, specify alphabet_size = 27,
+ *            not the actual number of characters;
+ *            when recursing, specify actual number of characters
+ * return:
+ *   initialized bucket suite
+ */
+struct bucket_suite* init_buckets(long *text, long text_length, int alphabet_size) {
+    long *characters = calloc(alphabet_size, sizeof(long*));
+
+    for (unsigned int i = 0; i < text_length; ++i) {
+	++characters[text[i]]; 
     }
 
     int counter = 0;
@@ -59,19 +72,14 @@ struct bucket_suite* init_buckets(char *text) {
 	}
     }
 
-    struct bucket* buckets = malloc(sizeof(struct bucket) * (counter + 1));
+    struct bucket* buckets = malloc(sizeof(struct bucket) * counter);
     int current_bucket = 0;
-    struct bucket bucket$ = { '$', malloc(sizeof(long)), 1, 0 };
-    bucket$.indices[0] = -1;
-
-    buckets[current_bucket] = bucket$;
-    ++current_bucket;
 
     for (int i = 0; i < alphabet_size; ++i) {
 	if (characters[i] != 0) {
 	    struct bucket* b = &buckets[current_bucket];
 
-	    b->character = i + 'A';
+	    b->character = i;
 	    b->indices = malloc(sizeof(long) * characters[i]);
 	    b->length = characters[i];
 	    b->indices_position = b->length - 1;
@@ -120,7 +128,7 @@ find_sstar_substrings(struct ch_suite* ch_suite) {
 	    ss_substrings[ss_index - 1].id = -1;
 	}
 
-	if (ch_suite->text[i].ch == '$') {
+	if (ch_suite->text[i].ch == code_char('$')) {
 	    ss_substrings[ss_index].end = i;
 	    ss_substrings[ss_index].id = -1;
 	}
@@ -133,7 +141,7 @@ find_sstar_substrings(struct ch_suite* ch_suite) {
     return ss;
 }
 
-void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite) {
+void name_sstar_substrings(long *text, struct sstar_substring_suite* ss_suite) {
     int current_id = 1;
 
     for (int i = 0; i < ss_suite->length - 1; ++i) {
@@ -146,19 +154,27 @@ void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite) {
 	ss_i->id = current_id;
 	++current_id;
 
-	char* s1 = text + ss_i->start;
+	long* s1 = text + ss_i->start;
 	int length = ss_i->end + 1 - ss_i->start;
 	
 	for (int j = i + 1; j < ss_suite->length; ++j) {
 	    struct sstar_substring* ss_j = &ss_suite->substring[j];
 
 	    if (ss_j->id != -1) {
+		// already found identical substring
 		continue;
 	    }
 
-	    char* s2 = text + ss_j->start;
+	    long* s2 = text + ss_j->start;
+	    bool arrays_are_identical = true;
 
-	    if (strncmp(s1, s2, length) == 0) {
+	    for (int k = 0; k < length; ++k) {
+		if (s1[k] != s2[k]) {
+		    arrays_are_identical = false;
+		}
+	    }
+
+	    if (arrays_are_identical) {
 		ss_j->id = ss_i->id;
 	    }
 	}
@@ -168,12 +184,14 @@ void name_sstar_substrings(char *text, struct sstar_substring_suite* ss_suite) {
 }
 
 static struct bucket*
-find_bucket_for_ch(struct bucket_suite* bucket_suite, char c) {
+find_bucket_for_ch(struct bucket_suite* bucket_suite, long c) {
     for (int i = 0; i < bucket_suite->length; ++i) {
 	if (bucket_suite->buckets[i].character == c) {
 	    return &bucket_suite->buckets[i];
 	}
     }
+
+    fprintf(stderr, "WARNING: bucket for character not found\n");
 
     return NULL;
 }
@@ -182,14 +200,13 @@ void
 buckets_place_sstar(struct ch_suite* ch_suite,
 		    struct bucket_suite* bucket_suite) {
     for (int i = ch_suite->length - 1; i >= 0; --i) {
-	char c = ch_suite->text[i].ch;
+	long c = ch_suite->text[i].ch;
 	enum char_type ct = ch_suite->text[i].ct;
 	
 	if (ct == SSTAR) {
 	    struct bucket* bucket = find_bucket_for_ch(bucket_suite, c);
 
 	    if (bucket == NULL) {
-		printf("Bucket for character %c not found.\n", c);
 		// TODO cleanup
 		exit(1);
 	    }
