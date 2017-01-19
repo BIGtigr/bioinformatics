@@ -49,7 +49,7 @@ void induce_l_suffixes(struct ch_suite* ch_suite,
 void induce_s_suffixes(struct ch_suite* ch_suite,
 		       struct bucket_suite *bucket_suite);
 
-int* suffix_array(char* t);
+int* suffix_array(long* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);
 

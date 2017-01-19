@@ -285,6 +285,60 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
     }
 }
 
+
+/**
+ * Induces L, S, S* from given text, and names resulting S* substrings
+ *
+ * args:
+ *   t: input text, must end with $ character
+ * return:
+ *   shortened text T, a result of naming S* substrings
+ */
+struct sstar_substring_suite*
+induce(long* text, long text_length, int alphabet_size) {
+    struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
+    struct bucket_suite* bucket_suite = init_buckets(text, text_length, alphabet_size);
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
+
+    struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
+    name_sstar_substrings(text, ss_suite); 
+
+    // sort sstar_substring indices
+    // TODO write method for sorting sstar_substring_suite in-place
+
+    return ss_suite;
+}
+
+
+static bool
+characters_are_unique(struct sstar_substring_suite* ss_suite) {
+    // assuming non-unique characters are always adjecent
+
+    for (int i = 0; i < ss_suite->length - 1; ++i) {
+	if (ss_suite->substring[i].id == ss_suite->substring[i + 1].id) {
+	    return false;
+	}
+    }
+
+    return true;
+}
+
+
+static long*
+extract_text(struct sstar_substring_suite* ss_suite) {
+    long *new_text = malloc(sizeof(long) * ss_suite->length);
+
+    for (int i = 0; i < ss_suite->length; ++i) {
+	new_text[i] = ss_suite->substring[i].id;
+    }
+
+    return new_text;
+}
+
+
 /**
 * Creates suffix array from given text.
 *
@@ -294,7 +348,25 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
 *   suffix array representation of given text or null if error occured.
 */
 
-int* suffix_array(char* t) {
-    int sa[] = {0};
-    return sa;
+int* suffix_array(long* t) {
+    struct sstar_substring_suite* ss_suite = induce(t);
+
+    if (characters_are_unique(ss_suite)) {
+	B1 = directly_compute_from_shortened_text();
+    } else {
+	// generates a copy of text, but this text is at most half the size of original
+	long* new_text = extract_text(ss_suite);
+
+	B1 = induce(new_text, text_length, alphabet_size));
+
+	free(new_text);
+    }
+
+    // using B1, determine correct order of S* substrings (comment in paper, page 3)
+    // = transform V into T
+    Decode S* strings B1 into R;
+	
+    B = induce(R);
+
+    return B;
 }
