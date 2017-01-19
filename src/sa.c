@@ -1,4 +1,5 @@
 # include <assert.h>
+# include <limits.h>
 # include <stdbool.h>
 # include <stdlib.h>
 # include <stdio.h>
@@ -290,52 +291,73 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
  * Induces L, S, S* from given text, and names resulting S* substrings
  *
  * args:
- *   t: input text, must end with $ character
+ *   text: input text, must end with $ character
+ *   text_length: length of text array
+ *   alphabet_size: number of characters in text alphabet, including '$'
  * return:
- *   shortened text T, a result of naming S* substrings
+ *   shortened text T, a result of naming S* substrings. T is terminated
+ *   by $ character, so no need to return length of it.
  */
-struct sstar_substring_suite*
-induce(long* text, long text_length, int alphabet_size) {
-    struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
-    struct bucket_suite* bucket_suite = init_buckets(text, text_length, alphabet_size);
+static long* 
+induce(long *text, long text_length, 
+       struct bucket_suite** bucket_suite, struct ch_suite* ch_suite)
+{
+    if (ch_suite == NULL) {
+	ch_suite = left_pass(right_pass(text, text_length));
+	buckets_place_sstar(ch_suite, *bucket_suite);
+    }
 
-    buckets_place_sstar(ch_suite, bucket_suite);
-    induce_l_suffixes(ch_suite, bucket_suite);
-    induce_s_suffixes(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, *bucket_suite);
+    induce_s_suffixes(ch_suite, *bucket_suite);
 
     struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
     name_sstar_substrings(text, ss_suite); 
 
-    // sort sstar_substring indices
-    // TODO write method for sorting sstar_substring_suite in-place
+    long *new_text = malloc(sizeof(long) * ss_suite->length);
 
-    return ss_suite;
+    // sort new_text by order of appearance of S* in original text
+    for (int i = 0; i < (*bucket_suite)->length; ++i) {
+	int smallest_index = INT_MAX;
+
+	for (int j = 0; j < (*bucket_suite)->buckets[i].length; ++j) {
+	    long current_index = (*bucket_suite)->buckets[i].indices[j];
+
+	    if (i > 0 &&  // smallest not found yet
+		ch_suite->text[current_index].ct == SSTAR &&
+		current_index < smallest_index) {
+		smallest_index = current_index;
+	    } else if (current_index > new_text[i - 1] &&
+		       ch_suite->text[current_index].ct == SSTAR &&
+		       current_index < smallest_index) {
+		smallest_index = current_index;
+	    }
+	}
+
+	new_text[i] = smallest_index;
+    
+    }
+
+    new_text[(*bucket_suite)->length] = code_char('$');
+
+    free_ch_suite(&ch_suite);
+    free_sstar_substring_suite(&ss_suite);
+
+    return new_text;
 }
 
 
 static bool
-characters_are_unique(struct sstar_substring_suite* ss_suite) {
+characters_are_unique(long* text) {
     // assuming non-unique characters are always adjecent
+    int i = 0;
 
-    for (int i = 0; i < ss_suite->length - 1; ++i) {
-	if (ss_suite->substring[i].id == ss_suite->substring[i + 1].id) {
+    while(text[i + 1] != code_char('$')) {
+	if (text[i] == text[i + 1]) {
 	    return false;
 	}
     }
 
     return true;
-}
-
-
-static long*
-extract_text(struct sstar_substring_suite* ss_suite) {
-    long *new_text = malloc(sizeof(long) * ss_suite->length);
-
-    for (int i = 0; i < ss_suite->length; ++i) {
-	new_text[i] = ss_suite->substring[i].id;
-    }
-
-    return new_text;
 }
 
 
@@ -349,24 +371,26 @@ extract_text(struct sstar_substring_suite* ss_suite) {
 */
 
 int* suffix_array(long* t) {
-    struct sstar_substring_suite* ss_suite = induce(t);
+}
 
-    if (characters_are_unique(ss_suite)) {
-	B1 = directly_compute_from_shortened_text();
+struct bucket_suite*
+sais(long* text, long text_length, int alphabet_size) {
+    struct bucket_suite* new_bucket_suite = init_buckets(text, text_length, alphabet_size);
+    long* shortened_text = induce(text, text_length, &new_bucket_suite, NULL);
+
+    if (characters_are_unique(shortened_text)) {
+	return new_bucket_suite;
     } else {
-	// generates a copy of text, but this text is at most half the size of original
-	long* new_text = extract_text(ss_suite);
+	// generates a copy of text, at most half the size of original, hence O(n*log(n)) space
+	// complexity
+	long new_text_length = get_text_length(shortened_text);
+	long new_text_alphabet = count_alphabet_characters(shortened_text);
+	struct bucket_suite* new_bucket_suite = sais(shortened_text, new_text_length, new_text_alphabet);
 
-	B1 = induce(new_text, text_length, alphabet_size));
-
-	free(new_text);
+	free(shortened_text);
     }
 
-    // using B1, determine correct order of S* substrings (comment in paper, page 3)
-    // = transform V into T
-    Decode S* strings B1 into R;
+    // determine new order of S* from new_bucket_suite
 	
-    B = induce(R);
-
-    return B;
+    return induce(text, text_length, bucket_suite, ch_suite); // which ch_suite we need here?
 }

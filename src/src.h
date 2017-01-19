@@ -48,6 +48,7 @@ void induce_l_suffixes(struct ch_suite* ch_suite,
 		       struct bucket_suite *bucket_suite);
 void induce_s_suffixes(struct ch_suite* ch_suite,
 		       struct bucket_suite *bucket_suite);
+struct bucket_suite* sais(long* text, long text_length, int alphabet_size);
 
 int* suffix_array(long* t);
 
