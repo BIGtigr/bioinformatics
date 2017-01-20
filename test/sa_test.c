@@ -280,10 +280,10 @@ void name_ss_substrings_test() {
     };
 
     struct sstar_substring ss_substring[4] = {
-	{ 2, 5, 1 },
-	{ 5, 8, 1 },
+	{ 2, 5, 3 },
+	{ 5, 8, 3 },
 	{ 8, 14, 2 },
-	{ 14, 14, 3 }
+	{ 14, 14, 1 }
     };
 
     struct sstar_substring_suite* ss_suite_valid =
@@ -292,10 +292,17 @@ void name_ss_substrings_test() {
     ss_suite_valid->substring = ss_substring;
     ss_suite_valid->length = 5;
 
+    struct ch_suite* ch_suite = left_pass(right_pass(text, 15));
+    struct bucket_suite* bucket_suite = init_buckets(text, 15, 27);
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
+
     struct sstar_substring_suite* ss_suite =
 	find_sstar_substrings(left_pass(right_pass(text, 15)));
     
-    name_sstar_substrings(text, ss_suite); 
+    name_sstar_substrings(text, bucket_suite, ss_suite); 
 
     for (int i = 0; i < 4; ++i) {
 	struct sstar_substring s1 = ss_suite_valid->substring[i];
@@ -303,7 +310,7 @@ void name_ss_substrings_test() {
 
 	if (s1.id != s2.id || s1.start != s2.start ||
 	    s1.end != s2.end) {
-	    printf("%ld %d %d\n", s2.id, s2.start, s2.end);
+	    printf("%ld, %ld %d %d\n", s1.id, s2.id, s2.start, s2.end);
 	    test_pass = 0;
 	}
     }
@@ -311,6 +318,8 @@ void name_ss_substrings_test() {
     printf("sa_test.c :: name_ss_substrings_test(): %d\n",
 	   test_pass);
 
+    free_ch_suite(&ch_suite);
+    free_bucket_suite(&bucket_suite);
     free_sstar_substring_suite(&ss_suite);
     free(ss_suite_valid);
 }
@@ -577,6 +586,7 @@ void induce_s_suffixes_test() {
     free_ch_suite(&ch_suite);
 }
 
+/*
 void suffix_array_test() {
     int test_pass = 1;
 
@@ -584,7 +594,7 @@ void suffix_array_test() {
     char* t = "BIOINFORMATIKA$";
     int n = strlen(t);
     int sa_valid[] = {14, 13, 9, 0, 5, 11, 3, 1, 12, 8, 4, 2, 6, 7, 10};
-    int* sa = suffix_array(t);
+    long* sa = suffix_array(t);
     
     for (i = 0; i < n; i++) {
         if(sa[i] != sa_valid[i]) {
@@ -607,6 +617,93 @@ void suffix_array_no_text_end_symbol_test() {
 
     printf("sa_test.c :: suffix_array_no_text_end_symbol_test(): %d\n", test_pass);
 }
+*/
+
+void sais_test() {
+    int test_pass = 1;
+
+    long text[15] = {
+	code_char('B'),
+	code_char('I'),
+	code_char('O'),
+	code_char('I'),
+	code_char('N'),
+	code_char('F'),
+	code_char('O'),
+	code_char('R'),
+	code_char('M'),
+	code_char('A'),
+	code_char('T'),
+	code_char('I'),
+	code_char('K'),
+	code_char('A'),
+	code_char('$')
+    };
+
+    long indices$[] = { 14 };
+    long indicesA[] = { 13, 9 };
+    long indicesB[] = { 0 };
+    long indicesF[] = { 5 };
+    long indicesI[] = { 11, 3, 1 };
+    long indicesK[] = { 12 };
+    long indicesM[] = { 8 };
+    long indicesN[] = { 4 };
+    long indicesO[] = { 2, 6 };
+    long indicesR[] = { 7 };
+    long indicesT[] = { 10 };
+
+    struct bucket buckets_valid[11] = {
+	{ code_char('$'), indices$, 1, 0 },
+	{ code_char('A'), indicesA, 2, 0 },
+	{ code_char('B'), indicesB, 1, -1 },
+	{ code_char('F'), indicesF, 1, -1 },
+	{ code_char('I'), indicesI, 3, -1 },
+	{ code_char('K'), indicesK, 1, 0 },
+	{ code_char('M'), indicesM, 1, 0 },
+	{ code_char('N'), indicesN, 1, 0 },
+	{ code_char('O'), indicesO, 2, 0 },
+	{ code_char('R'), indicesR, 1, 0 },
+	{ code_char('T'), indicesT, 1, 0 },
+    };
+
+    struct bucket_suite* bs = sais(text, 15, 27);
+
+    for (int i = 0; i < bs->length; ++i) {
+	for (int j = 0; j < bs->buckets[i].length; ++j) {
+	    if (bs->buckets[i].indices[j] != buckets_valid[i].indices[j]) {
+		printf("%c: got %ld, expected %ld\n",
+		       decode_char(bs->buckets[i].character),
+		       bs->buckets[i].indices[j],
+		       buckets_valid[i].indices[j]);
+		test_pass = 0;
+	    }
+	}
+    }
+   
+    printf("sa_test.c :: sais_test(): %d\n", test_pass);
+
+    free(bs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void suffix_array_from_file_test() {
     int test_pass = 1;

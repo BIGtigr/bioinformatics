@@ -142,46 +142,86 @@ find_sstar_substrings(struct ch_suite* ch_suite) {
     return ss;
 }
 
-void name_sstar_substrings(long *text, struct sstar_substring_suite* ss_suite) {
-    int current_id = 1;
+void name_sstar_substrings(long *text,
+			   struct bucket_suite* bucket_suite,
+			   struct sstar_substring_suite* ss_suite) {
+    long current_id = 1;
 
-    for (int i = 0; i < ss_suite->length - 1; ++i) {
-	struct sstar_substring* ss_i = &ss_suite->substring[i];
+    // first index in SA is always for '$', that's the last in ss_suite
+    ss_suite->substring[ss_suite->length - 1].id = current_id;
+    ++current_id;
 
-	if (ss_i->id != -1) {
-	    continue;
-	}
+    // iterate over SA
+    for (int i = 1; i < bucket_suite->length; ++i) {
+	for (int j = 0; j < bucket_suite->buckets[i].length; ++j) {
+	    bool ss_found = false;
+	    int current_ss;
+	    long* s1;
+	    long* s2;
+	    int start1, end1;
+	    int start2, end2;
+	    int length1, length2;
 
-	ss_i->id = current_id;
-	++current_id;
+	    // for given index from SA, find if there is S* in ss_suite with same starting index
+	    for (int k = 0; k < ss_suite->length - 1; ++k) {
+		if (ss_suite->substring[k].start == bucket_suite->buckets[i].indices[j]) {
+		    printf("Found substring %d\n", k);
+		    ss_found = true;
+		    start1 = ss_suite->substring[k].start;
+		    end1 = ss_suite->substring[k].end;
+		    length1 = end1 - start1;
 
-	long* s1 = text + ss_i->start;
-	int length = ss_i->end + 1 - ss_i->start;
-	
-	for (int j = i + 1; j < ss_suite->length; ++j) {
-	    struct sstar_substring* ss_j = &ss_suite->substring[j];
+		    s1 = text + start1;
+		    current_ss = k;
 
-	    if (ss_j->id != -1) {
-		// already found identical substring
-		continue;
-	    }
+		    if (ss_suite->substring[current_ss].id == -1) {
+			ss_suite->substring[current_ss].id = current_id;
+			printf("Named substring %d: %ld\n", k, current_id);
+			++current_id;
+		    }
 
-	    long* s2 = text + ss_j->start;
-	    bool arrays_are_identical = true;
-
-	    for (int k = 0; k < length; ++k) {
-		if (s1[k] != s2[k]) {
-		    arrays_are_identical = false;
+		    break;
 		}
 	    }
 
-	    if (arrays_are_identical) {
-		ss_j->id = ss_i->id;
+	    // If S* substring is found, name it.
+	    // Compare with every other S* substring. If other identical is found, assign it
+	    // its name, otherwise assign new name
+	    if (ss_found) {
+		for (int k = 0; k < ss_suite->length - 1; ++k) {
+		    if (ss_suite->substring[k].id != -1 || k == current_ss) {
+			continue;
+		    }
+
+		    start2 = ss_suite->substring[k].start;
+		    end2 = ss_suite->substring[k].end;
+		    length2 = end2 - start2;
+
+		    int length = length1 < length2 ? length1 : length2;
+
+		    bool arrays_are_identical = true;
+		    s2 = text + start2;
+		    for (int l = 0; l < length; ++l) {
+			if (s1[l] != s2[l]) {
+			    arrays_are_identical = false;
+			    break;
+			}
+		    }
+
+		    if (arrays_are_identical) {
+			ss_suite->substring[k].id = ss_suite->substring[current_ss].id;
+			printf("Named substring %d after %ld: %d\n", k, current_id, current_ss);
+		    } else {
+			ss_suite->substring[k].id = current_id;
+			printf("Named substring %d: %ld\n", k, current_id);
+			++current_id;
+		    }
+
+		    break;
+		}
 	    }
 	}
     }
-
-    ss_suite->substring[ss_suite->length - 1].id = current_id;
 }
 
 static struct bucket*
@@ -299,48 +339,55 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
  *   by $ character, so no need to return length of it.
  */
 static long* 
-induce(long *text, long text_length, 
-       struct bucket_suite** bucket_suite, struct ch_suite* ch_suite)
+induce(long *text, long text_length,
+       struct bucket_suite* bucket_suite, struct sstar_substring_suite* ss_suite)
 {
-    if (ch_suite == NULL) {
-	ch_suite = left_pass(right_pass(text, text_length));
-	buckets_place_sstar(ch_suite, *bucket_suite);
-    }
+    struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
 
-    induce_l_suffixes(ch_suite, *bucket_suite);
-    induce_s_suffixes(ch_suite, *bucket_suite);
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
 
-    struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
-    name_sstar_substrings(text, ss_suite); 
+    struct sstar_substring_suite* new_ss_suite = find_sstar_substrings(ch_suite);
+    name_sstar_substrings(text, bucket_suite, new_ss_suite); 
 
     long *new_text = malloc(sizeof(long) * ss_suite->length);
 
     // sort new_text by order of appearance of S* in original text
-    for (int i = 0; i < (*bucket_suite)->length; ++i) {
-	int smallest_index = INT_MAX;
+    long smallest_index = LONG_MAX;
+    long current_index = 0;
 
-	for (int j = 0; j < (*bucket_suite)->buckets[i].length; ++j) {
-	    long current_index = (*bucket_suite)->buckets[i].indices[j];
+    for (int i = 0; i < bucket_suite->length; ++i) {
+	for (int j = 0; j < bucket_suite->buckets[i].length; ++j) {
+	    current_index = bucket_suite->buckets[i].indices[j];
 
-	    if (i > 0 &&  // smallest not found yet
-		ch_suite->text[current_index].ct == SSTAR &&
-		current_index < smallest_index) {
+	    if (ch_suite->text[current_index].ct != SSTAR) {
+		continue;
+	    }
+
+	    if (smallest_index == LONG_MAX &&  // smallest not found yet
+		current_index < smallest_index)
+	    {
 		smallest_index = current_index;
 	    } else if (current_index > new_text[i - 1] &&
-		       ch_suite->text[current_index].ct == SSTAR &&
 		       current_index < smallest_index) {
 		smallest_index = current_index;
 	    }
+
 	}
 
-	new_text[i] = smallest_index;
-    
+	// find S* name corresponding to found current_index
+	for (int n = 0; n < new_ss_suite->length; ++n) {
+	    if (new_ss_suite->substring[n].start == smallest_index) {
+		new_text[i] = new_ss_suite->substring[i].id;
+	    }
+	}
     }
 
-    new_text[(*bucket_suite)->length] = code_char('$');
+    new_text[bucket_suite->length] = code_char('$');
 
     free_ch_suite(&ch_suite);
-    free_sstar_substring_suite(&ss_suite);
+    free_sstar_substring_suite(&new_ss_suite);
 
     return new_text;
 }
@@ -360,6 +407,38 @@ characters_are_unique(long* text) {
     return true;
 }
 
+/**
+ * Text ends with '$'
+ */
+static long get_text_length(long* text) {
+    int i = 0;
+
+    while (text[i] != code_char('$')) {
+	++i;
+    }
+
+    return i + 1;
+}
+
+/**
+ * alphabet characters are from 1 to n, so count is n
+ * does not work for original text, of course
+ */
+static int count_alphabet_characters(long* text) {
+    long largest_char = 0;
+    int i = 0;
+
+    while(text[i] != code_char('$')) {
+	if (text[i] > largest_char) {
+	    largest_char = text[i];
+	}
+
+	++i;
+    }
+
+    return largest_char;
+}
+    
 
 /**
 * Creates suffix array from given text.
@@ -375,22 +454,39 @@ int* suffix_array(long* t) {
 
 struct bucket_suite*
 sais(long* text, long text_length, int alphabet_size) {
-    struct bucket_suite* new_bucket_suite = init_buckets(text, text_length, alphabet_size);
-    long* shortened_text = induce(text, text_length, &new_bucket_suite, NULL);
+    struct bucket_suite* bucket_suite =
+	init_buckets(text, text_length, alphabet_size);
+    struct sstar_substring_suite* ss_suite = malloc(sizeof(struct sstar_substring_suite));
+
+    long* shortened_text = induce(text, text_length, bucket_suite, ss_suite);
 
     if (characters_are_unique(shortened_text)) {
-	return new_bucket_suite;
-    } else {
-	// generates a copy of text, at most half the size of original, hence O(n*log(n)) space
-	// complexity
-	long new_text_length = get_text_length(shortened_text);
-	long new_text_alphabet = count_alphabet_characters(shortened_text);
-	struct bucket_suite* new_bucket_suite = sais(shortened_text, new_text_length, new_text_alphabet);
-
-	free(shortened_text);
+	free_sstar_substring_suite(&ss_suite);
+	
+	return bucket_suite;
     }
 
+    // generates a copy of text, at most half the size of original,
+    // hence O(n*log(n)) space complexity
+    long new_text_length = get_text_length(shortened_text);
+    long new_text_alphabet = count_alphabet_characters(shortened_text);
+
+    struct bucket_suite* shuffled_bucket_suite =
+	sais(shortened_text, new_text_length, new_text_alphabet);
+
+    free(shortened_text);
+
     // determine new order of S* from new_bucket_suite
+    // go into recursion with bucket_suite initialized with S*
+    shuffle_bucket(bucket_suite, shuffled_bucket_suite);
 	
-    return induce(text, text_length, bucket_suite, ch_suite); // which ch_suite we need here?
+    reinitialize_bucket_suite(bucket_suite, ss_suite);
+
+    induce(text, text_length, bucket_suite, NULL);
+
+    free_sstar_substring_suite(&ss_suite);
+    free_bucket_suite(&bucket_suite);
+
+    return bucket_suite;
 }
+
