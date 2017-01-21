@@ -210,14 +210,15 @@ void name_sstar_substrings(long *text,
 
 		    if (arrays_are_identical) {
 			ss_suite->substring[k].id = ss_suite->substring[current_ss].id;
-			printf("Named substring %d after %ld: %d\n", k, current_id, current_ss);
-		    } else {
-			ss_suite->substring[k].id = current_id;
-			printf("Named substring %d: %ld\n", k, current_id);
-			++current_id;
+			printf("Named substring %d after %ld: %ld\n", k, current_ss, ss_suite->substring[current_ss].id);
 		    }
+		    /* else { */
+		    /* 	ss_suite->substring[k].id = current_id; */
+		    /* 	printf("Named substring %d: %ld\n", k, current_id); */
+		    /* 	++current_id; */
+		    /* } */
 
-		    break;
+		    /* break; */
 		}
 	    }
 	}
@@ -355,6 +356,7 @@ induce(long *text, long text_length,
 
     // sort new_text by order of appearance of S* in original text
     long smallest_index = LONG_MAX;
+    long text_index = 0;
     long current_index = 0;
 
     for (int i = 0; i < bucket_suite->length; ++i) {
@@ -373,18 +375,18 @@ induce(long *text, long text_length,
 		       current_index < smallest_index) {
 		smallest_index = current_index;
 	    }
-
-	}
-
-	// find S* name corresponding to found current_index
-	for (int n = 0; n < new_ss_suite->length; ++n) {
-	    if (new_ss_suite->substring[n].start == smallest_index) {
-		new_text[i] = new_ss_suite->substring[i].id;
-	    }
 	}
     }
 
-    new_text[bucket_suite->length] = code_char('$');
+    // find S* name corresponding to found current_index
+    for (int n = 0; n < new_ss_suite->length; ++n) {
+	if (new_ss_suite->substring[n].start == smallest_index) {
+	    new_text[text_index] = new_ss_suite->substring[n].id;
+	    ++text_index;
+	}
+    }
+
+    new_text[text_index] = code_char('$');
 
     free_ch_suite(&ch_suite);
     free_sstar_substring_suite(&new_ss_suite);
@@ -465,7 +467,7 @@ sais(long* text, long text_length, int alphabet_size) {
 	
 	return bucket_suite;
     }
-
+    /*
     // generates a copy of text, at most half the size of original,
     // hence O(n*log(n)) space complexity
     long new_text_length = get_text_length(shortened_text);
@@ -488,5 +490,7 @@ sais(long* text, long text_length, int alphabet_size) {
     free_bucket_suite(&bucket_suite);
 
     return bucket_suite;
+    */
+    return NULL;
 }
 

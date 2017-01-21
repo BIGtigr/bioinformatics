@@ -290,7 +290,7 @@ void name_ss_substrings_test() {
 	malloc(sizeof(struct sstar_substring_suite));
 
     ss_suite_valid->substring = ss_substring;
-    ss_suite_valid->length = 5;
+    ss_suite_valid->length = 4;
 
     struct ch_suite* ch_suite = left_pass(right_pass(text, 15));
     struct bucket_suite* bucket_suite = init_buckets(text, 15, 27);
