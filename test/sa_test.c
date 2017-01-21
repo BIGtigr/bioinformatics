@@ -685,7 +685,59 @@ void sais_norecursion_test() {
     free(bs);
 }
 
+void sais_recursion_test() {
+    int test_pass = 1;
+    
+    long text[15] = {
+	code_char('M'),
+	code_char('M'),
+	code_char('I'),
+	code_char('S'),
+	code_char('S'),
+	code_char('I'),
+	code_char('S'),
+	code_char('S'),
+	code_char('I'),
+	code_char('I'),
+	code_char('P'),
+	code_char('P'),
+	code_char('I'),
+	code_char('I'),
+	code_char('$')
+    };
 
+    long indices$[] = { 14 };
+    long indicesI[] = { 13, 8, 9, 2, 5 };
+    long indicesM[] = { 0, 1 };
+    long indicesP[] = { 11, 10 };
+    long indicesS[] = { 4, 7, 3, 6 };
+
+    struct bucket buckets_valid[5] = {
+	{ code_char('$'), indices$, 1, 0 },
+	{ code_char('I'), indicesI, 5, 0 },
+	{ code_char('M'), indicesM, 2, -1 },
+	{ code_char('P'), indicesP, 2, -1 },
+	{ code_char('S'), indicesS, 4, -1 }
+    };
+
+    struct bucket_suite* bs = sais(text, 15, 27);
+
+    for (int i = 0; i < bs->length; ++i) {
+	for (int j = 0; j < bs->buckets[i].length; ++j) {
+	    if (bs->buckets[i].indices[j] != buckets_valid[i].indices[j]) {
+		printf("%c: got %ld, expected %ld\n",
+		       decode_char(bs->buckets[i].character),
+		       bs->buckets[i].indices[j],
+		       buckets_valid[i].indices[j]);
+		test_pass = 0;
+	    }
+	}
+    }
+   
+    printf("sa_test.c :: sais_recursion_test(): %d\n", test_pass);
+
+    free(bs);
+}
 
 
 

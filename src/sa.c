@@ -473,7 +473,7 @@ sais(long* text, long text_length, int alphabet_size) {
     if (characters_are_unique(shortened_text)) {
 	return bucket_suite;
     }
-    /*
+
     // generates a copy of text, at most half the size of original,
     // hence O(n*log(n)) space complexity
     long new_text_length = get_text_length(shortened_text);
@@ -486,14 +486,12 @@ sais(long* text, long text_length, int alphabet_size) {
     // go into recursion with bucket_suite initialized with S*
     reinitialize_bucket_suite(bucket_suite, shortened_text, shuffled_bucket_suite);
 
-    induce(text, text_length, bucket_suite, NULL);
+    // it will place S* again here, modify induce
+    induce(text, text_length, bucket_suite);
 
     free(shortened_text);
-    free_sstar_substring_suite(&ss_suite);
     free_bucket_suite(&bucket_suite);
 
     return bucket_suite;
-    */
-    return NULL;
 }
 

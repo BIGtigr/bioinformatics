@@ -14,6 +14,7 @@ void induce_l_suffixes_test();
 void induce_s_suffixes_test();
 
 void sais_norecursion_test();
+void sais_recursion_test();
 
 void suffix_array_test();
 void suffix_array_no_text_end_symbol_test();
