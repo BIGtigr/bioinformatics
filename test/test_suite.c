@@ -15,7 +15,7 @@ int main()
     induce_l_suffixes_test();
     induce_s_suffixes_test();
 
-    sais_test();
+    sais_norecursion_test();
 
     /* suffix_array_test(); */
     /* suffix_array_no_text_end_symbol_test(); */

@@ -619,7 +619,7 @@ void suffix_array_no_text_end_symbol_test() {
 }
 */
 
-void sais_test() {
+void sais_norecursion_test() {
     int test_pass = 1;
 
     long text[15] = {
@@ -680,7 +680,7 @@ void sais_test() {
 	}
     }
    
-    printf("sa_test.c :: sais_test(): %d\n", test_pass);
+    printf("sa_test.c :: sais_norecursion_test(): %d\n", test_pass);
 
     free(bs);
 }
