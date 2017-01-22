@@ -11,7 +11,7 @@
 * return:    
 *   content of file in char* representation or null if error occured.
 */
-char* read_file(char* file_name) {
+long* read_file(char* file_name) {
     FILE *f = fopen(file_name, "rb");
     fseek(f, 0, SEEK_END);
     long n = ftell(f);
@@ -35,7 +35,7 @@ char* read_file(char* file_name) {
 * return:    
 *   Value 1 if writting to file had been done successfully, 0 otherwise.
 */
-int write_file(char* file_content, char* file_name) {
+int write_file(long* file_content, char* file_name) {
     FILE* f = fopen(file_name, "w");
     if(!f) return 0;
     fprintf(f, "%s", file_content);

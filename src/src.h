@@ -59,11 +59,8 @@ void induce_s_suffixes(struct ch_suite* ch_suite,
 
 struct bucket_suite* sais(long* text, long text_length, int alphabet_size);
 
-int* suffix_array(long* t);
+long* suffix_array(long* t);
 
 char* burrows_wheeler_transform(char* t, int* sa, int n);
-
-char* read_file(char* file_name);
-int write_file(char* file_content, char* file_name);
 
 #endif

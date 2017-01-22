@@ -165,7 +165,6 @@ void name_sstar_substrings(long *text,
 	    // for given index from SA, find if there is S* in ss_suite with same starting index
 	    for (int k = 0; k < ss_suite->length - 1; ++k) {
 		if (ss_suite->substring[k].start == bucket_suite->buckets[i].indices[j]) {
-		    printf("Found substring %d\n", k);
 		    ss_found = true;
 		    start1 = ss_suite->substring[k].start;
 		    end1 = ss_suite->substring[k].end;
@@ -176,7 +175,6 @@ void name_sstar_substrings(long *text,
 
 		    if (ss_suite->substring[current_ss].id == -1) {
 			ss_suite->substring[current_ss].id = current_id;
-			printf("Named substring %d: %ld\n", k, current_id);
 			++current_id;
 		    }
 
@@ -210,15 +208,7 @@ void name_sstar_substrings(long *text,
 
 		    if (arrays_are_identical) {
 			ss_suite->substring[k].id = ss_suite->substring[current_ss].id;
-			printf("Named substring %d after %ld: %ld\n", k, current_ss, ss_suite->substring[current_ss].id);
 		    }
-		    /* else { */
-		    /* 	ss_suite->substring[k].id = current_id; */
-		    /* 	printf("Named substring %d: %ld\n", k, current_id); */
-		    /* 	++current_id; */
-		    /* } */
-
-		    /* break; */
 		}
 	    }
 	}
@@ -340,24 +330,17 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
  *   by $ character, so no need to return length of it.
  */
 static long* 
-induce(long *text, long text_length, struct bucket_suite* bucket_suite) {
-    struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
-
-    buckets_place_sstar(ch_suite, bucket_suite);
-    induce_l_suffixes(ch_suite, bucket_suite);
-    induce_s_suffixes(ch_suite, bucket_suite);
-
-    struct sstar_substring_suite* new_ss_suite = find_sstar_substrings(ch_suite);
-    name_sstar_substrings(text, bucket_suite, new_ss_suite); 
-
-    long *new_text = malloc(sizeof(long) * (new_ss_suite->length + 1));
+generate_shortened_text(struct ch_suite* ch_suite, struct bucket_suite* bucket_suite,
+       struct sstar_substring_suite* ss_suite)
+{
+    long* new_text = malloc(sizeof(long) * ch_suite->length);
 
     // sort new_text by order of appearance of S* in original text
     long text_index = 0;
     long current_index = 0;
     long last_filled_index = 0;
 
-    for (int k = 0; k < new_ss_suite->length; ++k) {
+    for (int k = 0; k < ss_suite->length; ++k) {
 	long smallest_index = LONG_MAX;
 
 	for (int i = 0; i < bucket_suite->length; ++i) {
@@ -379,9 +362,9 @@ induce(long *text, long text_length, struct bucket_suite* bucket_suite) {
 	}
 
 	// find S* name corresponding to found current_index
-	for (int n = 0; n < new_ss_suite->length; ++n) {
-	    if (new_ss_suite->substring[n].start == smallest_index) {
-		new_text[text_index] = new_ss_suite->substring[n].id;
+	for (int n = 0; n < ss_suite->length; ++n) {
+	    if (ss_suite->substring[n].start == smallest_index) {
+		new_text[text_index] = ss_suite->substring[n].id;
 		++text_index;
 	    }
 	}
@@ -390,9 +373,6 @@ induce(long *text, long text_length, struct bucket_suite* bucket_suite) {
     }
 
     new_text[text_index] = code_char('$');
-
-    free_ch_suite(&ch_suite);
-    free_sstar_substring_suite(&new_ss_suite);
 
     return new_text;
 }
@@ -432,7 +412,7 @@ characters_are_unique(long* text) {
 
 
 /**
- * alphabet characters are from 1 to n, so count is n
+ * alphabet characters are from 0 to n, so count is n + 1
  * does not work for original text, of course
  */
 static int count_alphabet_characters(long* text) {
@@ -447,7 +427,39 @@ static int count_alphabet_characters(long* text) {
 	++i;
     }
 
-    return largest_char;
+    return largest_char + 1;
+}
+
+static void buckets_clean_buckets(struct bucket_suite* bs) {
+    for (int i = 0; i < bs->length; ++i) {
+	for (int j = 0; j < bs->buckets[i].length; ++j) {
+	    bs->buckets[i].indices[j] = -1;
+	}
+
+	bs->buckets[i].indices_position = bs->buckets[i].length - 1;
+    }
+}
+
+static void buckets_shuffle_sstar(long* shortened_text, struct bucket_suite* bs_shuffled,
+				  struct ch_suite* ch_suite, struct bucket_suite* bs,
+				  struct sstar_substring_suite* ss_suite) {
+    for (int k = 0; k < ss_suite->length; ++k) {
+	for (int i = bs_shuffled->length - 1; i > 0; --i) {
+	    for (int j = bs_shuffled->buckets[i].length - 1; j >= 0; --j) {
+		long ch;
+
+		if (ss_suite->substring[k].id ==
+		    shortened_text[bs_shuffled->buckets[i].indices[j]]) {
+		    ch = ch_suite->text[ss_suite->substring[k].start].ch;
+
+		    struct bucket* bucket = find_bucket_for_ch(bs, ch);
+		    bucket->indices[bucket->indices_position] = ss_suite->substring[k].start;
+		    --bucket->indices_position;
+		    ++k;
+		}
+	    }
+	}
+    }
 }
     
 
@@ -460,37 +472,65 @@ static int count_alphabet_characters(long* text) {
 *   suffix array representation of given text or null if error occured.
 */
 
-int* suffix_array(long* t) {
+long* suffix_array(long* t) {
+    long text_length = get_text_length(t);
+    long alphabet_size = count_alphabet_characters(t);
+
+    struct bucket_suite* bs = sais(t, text_length, alphabet_size);
+    long* sa = malloc(sizeof(long) * text_length);
+
+    int n = 0;
+    for (int i = 0; i < bs->length; ++i) {
+	for (int j = 0; j < bs->buckets[i].length; ++j) {
+	    sa[n++] = bs->buckets[i].indices[j];
+	}
+    }
+
+    free_bucket_suite(&bs);
+
+    return sa;
 }
 
 struct bucket_suite*
 sais(long* text, long text_length, int alphabet_size) {
+    struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
     struct bucket_suite* bucket_suite =
 	init_buckets(text, text_length, alphabet_size);
+    struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
 
-    long* shortened_text = induce(text, text_length, bucket_suite);
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
+    name_sstar_substrings(text, bucket_suite, ss_suite); 
+
+    long* shortened_text =
+	generate_shortened_text(ch_suite, bucket_suite, ss_suite);
 
     if (characters_are_unique(shortened_text)) {
+	free(shortened_text);
+	free_ch_suite(&ch_suite);
+	free_sstar_substring_suite(&ss_suite);
+
 	return bucket_suite;
     }
 
-    // generates a copy of text, at most half the size of original,
-    // hence O(n*log(n)) space complexity
     long new_text_length = get_text_length(shortened_text);
     long new_text_alphabet = count_alphabet_characters(shortened_text);
 
     struct bucket_suite* shuffled_bucket_suite =
 	sais(shortened_text, new_text_length, new_text_alphabet);
 
-    // determine new order of S* from new_bucket_suite
-    // go into recursion with bucket_suite initialized with S*
-    reinitialize_bucket_suite(bucket_suite, shortened_text, shuffled_bucket_suite);
+    buckets_clean_buckets(bucket_suite);
+    buckets_shuffle_sstar(shortened_text, shuffled_bucket_suite, ch_suite,
+			  bucket_suite, ss_suite);
 
-    // it will place S* again here, modify induce
-    induce(text, text_length, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
 
     free(shortened_text);
-    free_bucket_suite(&bucket_suite);
+    free_ch_suite(&ch_suite);
+    free_bucket_suite(&shuffled_bucket_suite);
+    free_sstar_substring_suite(&ss_suite);
 
     return bucket_suite;
 }
