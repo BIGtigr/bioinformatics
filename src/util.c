@@ -2,6 +2,7 @@
 # include <stdlib.h>
 
 # include "src.h"
+# include "util.h"
 
 /**
 * Reads file content.
@@ -13,15 +14,26 @@
 */
 long* read_file(char* file_name) {
     FILE *f = fopen(file_name, "rb");
+
     fseek(f, 0, SEEK_END);
     long n = ftell(f);
     fseek(f, 0, SEEK_SET);  //same as rewind(f);
 
-    char *t = malloc(n + 1);
-    fread(t, n, 1, f);
+    long *t = malloc(sizeof(long) * n + 1);
+    int i = 0;
+    int errno;
+    char ch;
+
+    while((errno = fscanf(f, "%c", &ch)) != EOF) {
+	if (ch == '\n') continue;
+
+	t[i++] = code_char(ch);
+    }
+
     fclose(f);
 
-    *(t + n) = '\0';
+    t[i] = code_char('$');
+
     return t;
 }
 

@@ -19,6 +19,7 @@ void sais_recursion_test();
 void suffix_array_test();
 void suffix_array_no_text_end_symbol_test();
 void suffix_array_from_file_test();
+void suffix_array_from_file_test2();
 
 void read_file_test();
 void read_big_file_test();

@@ -280,10 +280,10 @@ void name_ss_substrings_test() {
     };
 
     struct sstar_substring ss_substring[4] = {
-	{ 2, 5, 3 },
-	{ 5, 8, 3 },
-	{ 8, 14, 2 },
-	{ 14, 14, 1 }
+	{ 2, 5, 2 },
+	{ 5, 8, 2 },
+	{ 8, 14, 1 },
+	{ 14, 14, 0 }
     };
 
     struct sstar_substring_suite* ss_suite_valid =
@@ -302,7 +302,7 @@ void name_ss_substrings_test() {
     struct sstar_substring_suite* ss_suite =
 	find_sstar_substrings(left_pass(right_pass(text, 15)));
     
-    name_sstar_substrings(text, bucket_suite, ss_suite); 
+    name_sstar_substrings(ch_suite, bucket_suite, ss_suite); 
 
     for (int i = 0; i < 4; ++i) {
 	struct sstar_substring s1 = ss_suite_valid->substring[i];
@@ -355,7 +355,7 @@ void buckets_place_sstar_test() {
     long indicesA[] = { -1, 9 };
     long indicesB[] = { -1 };
     long indicesF[] = { 5 };
-    long indicesI[] = { -1, 3, 11 };
+    long indicesI[] = { -1, 11, 3 };
     long indicesK[] = { -1 };
     long indicesM[] = { -1 };
     long indicesN[] = { -1 };
@@ -442,7 +442,7 @@ void induce_l_suffixes_test() {
     long indicesA[] = { 13, 9 };
     long indicesB[] = { -1 };
     long indicesF[] = { 5 };
-    long indicesI[] = { -1, 3, 11 };
+    long indicesI[] = { -1, 11, 3 };
     long indicesK[] = { 12 };
     long indicesM[] = { 8 };
     long indicesN[] = { 4 };
@@ -762,10 +762,9 @@ void suffix_array_from_file_test() {
     int i;
     // TODO try with really large files.
     char* in_path = "data/input_test_file1.txt";
-    char* t = read_file(in_path);
+    long* t = read_file(in_path);
 
-    int n = strlen(t);
-    int sa_valid[] = {10000, 5204, 4925, 6781, 9280, 4287, 6910, 2643,
+    long sa_valid[] = {10000, 5204, 4925, 6781, 9280, 4287, 6910, 2643,
     2814, 2260, 1702, 1561, 9589, 5205, 7169, 2724, 4332, 4926, 1451, 6480,
     9248, 4257, 7907, 2986, 6782, 2981, 3523, 3286, 2220, 5968, 6361, 1550,
     2384, 4949, 8762, 9281, 1186, 2550, 8400, 4288, 6911, 1097, 2289, 6476,
@@ -1602,13 +1601,39 @@ void suffix_array_from_file_test() {
 
     long* sa = suffix_array(t);
     
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < 10001; i++) {
         if(sa[i] != sa_valid[i]) {
+	    printf("expected %ld, got %ld\n", sa_valid[i], sa[i]);
             test_pass = 0;
         }
     }
 
-    free(sa);
-
     printf("sa_test.c :: suffix_array_from_file_test(): %d\n", test_pass);
+
+    free(sa);
+}
+
+void suffix_array_from_file_test2() {
+    int test_pass = 1;
+    
+    int i;
+
+    // TODO try with really large files.
+    char* in_path = "data/input_test_file3.txt";
+    long* t = read_file(in_path);
+
+    long sa_valid[] = { 11, 7, 3, 0, 9, 5, 10, 6, 8, 4, 2, 1 };
+
+    long* sa = suffix_array(t);
+    
+    for (i = 0; i < 12; i++) {
+	if (sa[i] != sa_valid[i]) {
+	    test_pass = 0;
+	    printf("got %ld, expected %ld\n", sa[i], sa_valid[i]);
+	}
+    }
+
+    printf("sa_test.c :: suffix_array_from_file_test2(): %d\n", test_pass);
+
+    free(sa);
 }

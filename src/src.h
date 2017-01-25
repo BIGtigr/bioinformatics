@@ -48,7 +48,8 @@ struct bucket_suite* init_buckets(long *t, long text_length, int alphabet_size);
 void buckets_place_sstar(struct ch_suite* ch_suite,
 			 struct bucket_suite* bucket_suite);
 
-void name_sstar_substrings(long* text, struct bucket_suite* bucket_suite,
+void name_sstar_substrings(struct ch_suite* ch_suite,
+			   struct bucket_suite* bucket_suite,
 			   struct sstar_substring_suite* ss_suite); 
 
 void induce_l_suffixes(struct ch_suite* ch_suite,

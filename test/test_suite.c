@@ -15,15 +15,16 @@ int main()
     induce_l_suffixes_test();
     induce_s_suffixes_test();
 
+    suffix_array_from_file_test2();
+
     sais_norecursion_test();
     sais_recursion_test();
 
+    suffix_array_from_file_test();
     suffix_array_test();
     /* suffix_array_no_text_end_symbol_test(); */
-    /* suffix_array_from_file_test(); */
-    /*
     read_file_test();
-    read_big_file_test();
+    /*read_big_file_test();
     write_file_test();
     */
 
