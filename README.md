@@ -1,7 +1,13 @@
 # Bioinformatics
 <p>Repository for student project</p>
 
-# How to run tests?
-<p>Position yourself to bioinformatics/test directory.</p>
+# How to run project?
+<p>Position yourself to bioinformatics/ directory. Run command:</p>
+<p>make src</p>
 
-<p>gcc test_suite.c bwt_test.c sa_test.c util_test.c ../src/bwt.c ../src/sa.c ../src/util.c && ./a.out</p>
+<p>This command will output bwt* executable file. Run command:</p>
+<p>./bwt* input_file output_file</p>
+
+# How to run tests?
+<p>Position yourself to bioinformatics/ directory. Run command:</p>
+<p>make test</p>

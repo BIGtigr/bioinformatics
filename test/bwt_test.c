@@ -51,7 +51,6 @@ void burrows_wheeler_transform_test() {
 	    test_pass = 0;
 	}
     }
-    
     printf("bwt_test.c :: burrows_wheeler_transform_test(): %d\n", test_pass);
 }
 
@@ -79,7 +78,7 @@ void burrows_wheeler_transform_file_test() {
 void bwt_no_text_end_symbol_test() {
     int test_pass = 1;
 
-    long t[15] = {
+    long t[14] = {
 	code_char('B'),
 	code_char('I'),
 	code_char('O'),
@@ -97,8 +96,7 @@ void bwt_no_text_end_symbol_test() {
     };
 
     long sa[] = {14, 13, 9, 0, 5, 11, 3, 1, 12, 8, 4, 2, 6, 7, 10};
-
-    long* bwt = burrows_wheeler_transform(t, sa, 15);
+    long* bwt = burrows_wheeler_transform(t, sa, 14);
     if (bwt != NULL) {
         test_pass = 0;
     }
