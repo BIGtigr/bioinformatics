@@ -3,6 +3,8 @@
 # ifndef HEADER_UTIL
 # define HEADER_UTIL
 
+struct long_suite* read_file_suite(char* file_name);
+
 long* read_file(char* file_name);
 int write_file(long* file_content, long length, char* file_name);
 
