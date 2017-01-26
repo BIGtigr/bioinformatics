@@ -38,6 +38,42 @@ long* read_file(char* file_name) {
 }
 
 /**
+* Reads file content. Line breaks are skipped
+*
+* args:
+*   file_name: path to file.
+* return:    
+*   content of file in char* representation in suite.
+*/
+struct long_suite* read_file_suite(char* file_name) {
+    FILE *f = fopen(file_name, "rb");
+
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    fseek(f, 0, SEEK_SET);  //same as rewind(f);
+
+    long *t = malloc(sizeof(long) * n + 1);
+    int i = 0;
+    int errno;
+    char ch;
+
+    while((errno = fscanf(f, "%c", &ch)) != EOF) {
+    if (ch == '\n') continue;
+
+    t[i++] = code_char(ch);
+    }
+
+    fclose(f);
+
+    t[i] = code_char('$');
+
+    struct long_suite* ls = malloc(sizeof(struct long_suite));
+    ls->t = t;
+    ls->length = i + 1;
+    return ls;
+}
+
+/**
 * Writes decoded content to file.
 * Replaces existing content in file.
 * Writes 75 characters per line, line breaks are not
@@ -51,7 +87,7 @@ long* read_file(char* file_name) {
 *   Value 1 if writting to file had been done successfully, 0 otherwise.
 */
 int write_file(long* file_content, long length, char* file_name) {
-    FILE* f = fopen(file_name, "w");
+    FILE* f = fopen(file_name, "w+");
     if(!f) return 0;
 
     int column_counter = 0;
