@@ -8,6 +8,16 @@
 # include "src.h"
 # include "util.h"
 
+
+/**
+ * Make a pass over text, classfying characters as either S or L types.
+ *
+ * args:
+ *   text: coded input text
+ *   text_length: length of coded input text
+ * return:
+ *   pointer to initialized ch_suite containing classified text
+ */
 struct ch_suite* right_pass(long *text, long text_length) {
     struct ch* coded_text = malloc(sizeof(struct ch) * text_length);
     struct ch_suite* ch_suite = malloc(sizeof(struct ch_suite));
@@ -33,6 +43,17 @@ struct ch_suite* right_pass(long *text, long text_length) {
     return ch_suite;
 }
 
+
+/**
+ * Make a pass over text classified into S and L characters, classifying
+ * it into S*, S and L
+ * 
+ * args:
+ *   ct: ch_suite containing text classified into S and L characters
+ * return:
+ *   pointer to the same ch_suite as received, with S*, S and L
+ *   classification
+ */
 struct ch_suite* left_pass(struct ch_suite* ct) {
     // special case: one character in ct, name it S* automatically
     if (ct->length == 1) {
@@ -54,6 +75,8 @@ struct ch_suite* left_pass(struct ch_suite* ct) {
 
 
 /**
+ * Initialize a new bucket suite
+ * 
  * args:
  *   text: coded text to be put into buckets; must end with '$'/0
  *   text_length: length of text array
@@ -63,7 +86,7 @@ struct ch_suite* left_pass(struct ch_suite* ct) {
  *            not the actual number of characters;
  *            when recursing, specify actual number of characters
  * return:
- *   initialized bucket suite
+ *   pointer to initialized bucket suite
  */
 struct bucket_suite* init_buckets(long *text, long text_length, int alphabet_size) {
     long *characters = calloc(alphabet_size, sizeof(long*) + 1);
@@ -107,6 +130,15 @@ struct bucket_suite* init_buckets(long *text, long text_length, int alphabet_siz
     return bucket_suite;
 }
 
+
+/**
+ * Given classified ch_suite, find all S* substrings contained within
+ *
+ * args:
+ *   ch_suite: text classified into S*, S, L characters
+ * return:
+ *   pointer to sstar_substring_suite containing found S* substrings
+ */
 struct sstar_substring_suite*
 find_sstar_substrings(struct ch_suite* ch_suite) {
     int n = 0;
@@ -148,6 +180,17 @@ find_sstar_substrings(struct ch_suite* ch_suite) {
     return ss;
 }
 
+
+/**
+ * Names S* substrings. S* substrings are named by increasing integers starting with 0.
+ * Identical S* substrings (containing same characters and character types) get same
+ * names
+ *
+ * args:
+ *   ch_suite: classified text
+ *   bucket_suite: bucket_suite initialized for ch_suite and filled with correct indices
+ *   ss_suite: ss_substring_suite initialized from ch_suite
+ */
 void name_sstar_substrings(struct ch_suite* ch_suite,
 			   struct bucket_suite* bucket_suite,
 			   struct sstar_substring_suite* ss_suite) {
@@ -220,6 +263,17 @@ void name_sstar_substrings(struct ch_suite* ch_suite,
     }
 }
 
+
+/**
+ * Given bucket_suite and character, returns pointer to bucket corresponding
+ * to character
+ *
+ * args:
+ *   bucket_suite: initialized bucket_suite
+ *   ch: character that corresponding bucket is searched for
+ * return:
+ *   pointer to bucket inside given bucket_suite
+ */
 static struct bucket*
 find_bucket_for_ch(struct bucket_suite* bucket_suite, long c) {
     for (int i = 0; i < bucket_suite->length; ++i) {
@@ -233,6 +287,17 @@ find_bucket_for_ch(struct bucket_suite* bucket_suite, long c) {
     return NULL;
 }
 
+
+/**
+ * Given coded text and empty initialized bucket_suite, place
+ * S* character indices into given bucket_suite
+ *
+ * args:
+ *   ch_suite: classified text
+ *   bucket_suite: initialized from ch_suite, empty
+ * return:
+ *   nothing, but given bucket_suite contains S* indices
+ */
 void
 buckets_place_sstar(struct ch_suite* ch_suite,
 		    struct bucket_suite* bucket_suite) {
@@ -254,6 +319,16 @@ buckets_place_sstar(struct ch_suite* ch_suite,
     }
 }
 
+
+/**
+ * Given coded text and bucket_suite initialized with S* characters, induces
+ * positions of L characters
+ *
+ * args:
+ *   ch_suite: coded text
+ *   bucket_suite: initialized from coded text, filled with S* indices from
+ *                 coded_text
+ */
 void
 induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) {
     struct ch* text = ch_suite->text;
@@ -286,6 +361,16 @@ induce_l_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
     }
 }
 
+
+/**
+ * Given coded text and bucket_suite initialized with S* indices and induced L indices,
+ * induce positions of S characters
+ * 
+ * args:
+ *   ch_suite: coded text
+ *   bucket_suite: initialized from coded text, filled with S* indices from coded text,
+ *                 and with induced positions of L characters
+ */
 void
 induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) {
     struct ch* text = ch_suite->text;
@@ -294,19 +379,6 @@ induce_s_suffixes(struct ch_suite* ch_suite, struct bucket_suite *bucket_suite) 
     for (int i = 0; i < bucket_suite->length; ++i) {
 	bucket_suite->buckets[i].indices_position = bucket_suite->buckets[i].length - 1;
     }
-    /*
-    for (int i = 0; i < ch_suite->length; ++i) {
-	printf("[%ld %d] ", ch_suite->text[i].ch, ch_suite->text[i].ct);
-    }
-    printf("\n");
-
-    for (int i = 0; i < bucket_suite->length; ++i) {
-    	printf("Bucket for %ld:\n", (bucket_suite->buckets[i].character));
-    	for (int j = 0; j < bucket_suite->buckets[i].length; ++j) {
-    	    printf(" %ld\n", bucket_suite->buckets[i].indices[j]);
-    	}
-    }
-    */
 
     for (int i = bucket_suite->length - 1; i >= 0; --i) {
 	struct bucket* b = &bucket_suite->buckets[i];
@@ -405,7 +477,8 @@ generate_shortened_text(struct ch_suite* ch_suite, struct bucket_suite* bucket_s
 
 
 /**
- * Text ends with '$'
+ * Returns length of given text. Assumes text ends with coded '$'
+ * character, therefore can only be used at algorithm entry point
  */
 static long get_text_length(long* text) {
     int i = 0;
@@ -417,6 +490,17 @@ static long get_text_length(long* text) {
     return i + 1;
 }
 
+
+/**
+ * Given text, returns whether given text contains duplicate characters
+ * or not
+ * 
+ * args:
+ *   text: text array
+ *   length: length of given text
+ * returns:
+ *   true if text contains no duplicate characters, false otherwise
+ */
 static bool
 characters_are_unique(long* text, long length) {
     long *characters = calloc(length, sizeof(long));
@@ -438,7 +522,13 @@ characters_are_unique(long* text, long length) {
 
 
 /**
+ * Counts number of different characters in given text
  *
+ * args:
+ *   text: text array
+ *   length: length of given text
+ * returns:
+ *   number of different characters in given text
  */
 static int count_alphabet_characters(long* text, long length) {
     long largest_character = 0;
@@ -466,6 +556,15 @@ static int count_alphabet_characters(long* text, long length) {
     return count;
 }
 
+
+/**
+ * Set all indices in given bucket suite to -1
+ *
+ * args:
+ *   bucket: dirty bucket
+ * return:
+ *   void, but given bucket suite is cleaned
+ */
 static void buckets_clean_buckets(struct bucket_suite* bs) {
     for (int i = 0; i < bs->length; ++i) {
 	for (int j = 0; j < bs->buckets[i].length; ++j) {
@@ -476,6 +575,11 @@ static void buckets_clean_buckets(struct bucket_suite* bs) {
     }
 }
 
+
+/**
+ * Reinitializes bucket_suite (bs) from other bucket_suite (bs_shuffled),
+ * part of SAIS algorithm and used exclusively by sais()
+ */
 static void buckets_shuffle_sstar(long* text,
 				  struct bucket_suite* bs_shuffled,
 				  struct bucket_suite* bs,
@@ -491,27 +595,17 @@ static void buckets_shuffle_sstar(long* text,
 	    --bucket->indices_position;
 	}
     }
-
-    /*
-    for (int i = 0; i < bs->length; ++i) {
-    	printf("Bucket for %c:\n", decode_char(bs->buckets[i].character));
-    	for (int j = 0; j < bs->buckets[i].length; ++j) {
-    	    printf(" %ld\n", bs->buckets[i].indices[j]);
-    	}
-    }
-    */
 }
     
 
 /**
-* Creates suffix array from given text.
+* Creates suffix array from given text. Helper method for sais()
 *
 * args:
 *   t: input text, must end with $ character.
 * return:    
 *   suffix array representation of given text or null if error occured.
 */
-
 long* suffix_array(long* t) {
     long text_length = get_text_length(t);
 
@@ -530,6 +624,17 @@ long* suffix_array(long* t) {
     return sa;
 }
 
+
+/**
+ * Main method for sais algorithm
+ *
+ * args:
+ *   text: text to be turned into suffix array
+ *   text_length: length of given text
+ *   alphabet_size: number of different characters in given text
+ * returns:
+ *   bucket_suite containing suffix array of given text
+ */
 struct bucket_suite*
 sais(long* text, long text_length, int alphabet_size) {
     struct ch_suite* ch_suite = left_pass(right_pass(text, text_length));
@@ -578,7 +683,6 @@ sais(long* text, long text_length, int alphabet_size) {
 
 	return bucket_suite;
     }
-    printf("Recursing\n");
 
     long new_text_length = ss_suite->length;
     long new_text_alphabet = count_alphabet_characters(shortened_text, new_text_length);
@@ -594,9 +698,8 @@ sais(long* text, long text_length, int alphabet_size) {
 
     free(shortened_text);
     free_ch_suite(&ch_suite);
-    //free_bucket_suite(&shuffled_bucket_suite);
+    free_bucket_suite(&shuffled_bucket_suite);
     free_sstar_substring_suite(&ss_suite);
 
     return bucket_suite;
 }
-

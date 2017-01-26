@@ -5,7 +5,7 @@
 # include "util.h"
 
 /**
-* Reads file content.
+* Reads file content. Line breaks are skipped
 *
 * args:
 *   file_name: path to file.
@@ -38,19 +38,34 @@ long* read_file(char* file_name) {
 }
 
 /**
-* Writes content to file.
+* Writes decoded content to file.
 * Replaces existing content in file.
+* Writes 75 characters per line, line breaks are not
+* part of output
 *
 * args:
-*   file_content: content to be written in file.
+*   file_content: coded content to be written in file.
+*   length: length of content to be written in file.
 *   file_name: path to file.
 * return:    
 *   Value 1 if writting to file had been done successfully, 0 otherwise.
 */
-int write_file(long* file_content, char* file_name) {
+int write_file(long* file_content, long length, char* file_name) {
     FILE* f = fopen(file_name, "w");
     if(!f) return 0;
-    fprintf(f, "%s", file_content);
+
+    int column_counter = 0;
+
+    for (int i = 0; i < length; ++i) {
+	fprintf(f, "%c", decode_char(file_content[i]));
+	++column_counter;
+
+	if (column_counter == 75) {
+	    fprintf(f, "\n");
+	    column_counter = 0;
+	}
+    }
+
     fclose(f);
     return 1;
 }

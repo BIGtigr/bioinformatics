@@ -62,6 +62,6 @@ struct bucket_suite* sais(long* text, long text_length, int alphabet_size);
 
 long* suffix_array(long* t);
 
-char* burrows_wheeler_transform(char* t, int* sa, int n);
+long* burrows_wheeler_transform(long* t, long* sa, long n);
 
 #endif

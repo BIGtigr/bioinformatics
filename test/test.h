@@ -2,6 +2,7 @@
 #define HEADER_TEST
 
 void burrows_wheeler_transform_test();
+void burrows_wheeler_transform_file_test();
 void bwt_no_text_end_symbol_test();
 
 void right_pass_test();
