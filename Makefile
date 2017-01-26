@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Isrc -Itest -Wall -Wextra -Werror -std=c99
+CFLAGS=-Isrc -Itest -Wall -Wextra -std=c99
 
 SRC_OBJ = obj/bwt.o obj/sa.o obj/util.o
 TEST_OBJ = obj/sa_test.o obj/test_suite.o obj/util_test.o obj/bwt_test.o $(SRC_OBJ)

@@ -13,3 +13,5 @@ void free_ch_suite(struct ch_suite** ch);
 void free_bucket(struct bucket* b);
 void free_bucket_suite(struct bucket_suite** bs);
 void free_sstar_substring_suite(struct sstar_substring_suite** ss);
+
+# endif
