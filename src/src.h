@@ -37,6 +37,11 @@ struct sstar_substring_suite {
     int length;
 };
 
+struct long_suite {
+    long* t;
+    int length;
+};
+
 struct sstar_substring_suite* find_sstar_substrings(struct ch_suite* ch_suite);
 
 struct ch_suite* right_pass(long* text, long text_length);
