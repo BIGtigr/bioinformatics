@@ -223,14 +223,21 @@ void find_sstar_substrings_test() {
     };
 
     struct ch_suite* ch_suite = left_pass(right_pass(text, 15));
-    struct sstar_substring_suite* ss_suite = find_sstar_substrings(ch_suite);
+    struct bucket_suite* bucket_suite = init_buckets(text, 15, 27);
+
+    buckets_place_sstar(ch_suite, bucket_suite);
+    induce_l_suffixes(ch_suite, bucket_suite);
+    induce_s_suffixes(ch_suite, bucket_suite);
+
+    struct sstar_substring_suite* ss_suite =
+	find_sstar_substrings(ch_suite, bucket_suite);
 
     struct sstar_substring ss_substring[5] = {
-	{ 3, 5, -1 },
-	{ 5, 9, -1 },
+	{ 14, 14, -1 },
 	{ 9, 11, -1 },
+	{ 5, 9, -1 },
 	{ 11, 14, -1 },
-	{ 14, 14, -1 }
+	{ 3, 5, -1 }
     };
 
     struct sstar_substring_suite* ss_suite_valid =
@@ -280,10 +287,10 @@ void name_ss_substrings_test() {
     };
 
     struct sstar_substring ss_substring[4] = {
-	{ 2, 5, 2 },
-	{ 5, 8, 2 },
+	{ 14, 14, 0 },
 	{ 8, 14, 1 },
-	{ 14, 14, 0 }
+	{ 2, 5, 2 },
+	{ 5, 8, 2 }
     };
 
     struct sstar_substring_suite* ss_suite_valid =
@@ -300,7 +307,7 @@ void name_ss_substrings_test() {
     induce_s_suffixes(ch_suite, bucket_suite);
 
     struct sstar_substring_suite* ss_suite =
-	find_sstar_substrings(left_pass(right_pass(text, 15)));
+      find_sstar_substrings(ch_suite, bucket_suite);
     
     name_sstar_substrings(ch_suite, bucket_suite, ss_suite); 
 
@@ -355,7 +362,7 @@ void buckets_place_sstar_test() {
     long indicesA[] = { -1, 9 };
     long indicesB[] = { -1 };
     long indicesF[] = { 5 };
-    long indicesI[] = { -1, 11, 3 };
+    long indicesI[] = { -1, 3, 11 };
     long indicesK[] = { -1 };
     long indicesM[] = { -1 };
     long indicesN[] = { -1 };
@@ -442,7 +449,7 @@ void induce_l_suffixes_test() {
     long indicesA[] = { 13, 9 };
     long indicesB[] = { -1 };
     long indicesF[] = { 5 };
-    long indicesI[] = { -1, 11, 3 };
+    long indicesI[] = { -1, 3, 11 };
     long indicesK[] = { 12 };
     long indicesM[] = { 8 };
     long indicesN[] = { 4 };
@@ -705,39 +712,36 @@ void sais_norecursion_test() {
 void sais_recursion_test() {
     int test_pass = 1;
     
-    long text[15] = {
-	code_char('M'),
-	code_char('M'),
-	code_char('I'),
-	code_char('S'),
-	code_char('S'),
-	code_char('I'),
-	code_char('S'),
-	code_char('S'),
-	code_char('I'),
-	code_char('I'),
-	code_char('P'),
-	code_char('P'),
-	code_char('I'),
-	code_char('I'),
-	code_char('$')
+    long text[12] = {
+	code_char('A'),
+	code_char('T'),
+	code_char('T'),
+	code_char('A'),
+	code_char('G'),
+	code_char('C'),
+	code_char('G'),
+	code_char('A'),
+	code_char('G'),
+	code_char('C'),
+	code_char('G'),
+	code_char('$'),
     };
 
-    long indices$[] = { 14 };
-    long indicesI[] = { 13, 12, 8, 9, 5, 2 };
-    long indicesM[] = { 1, 0 };
-    long indicesP[] = { 11, 10 };
-    long indicesS[] = { 7, 4, 6, 3 };
+    long indices$[] = { 11 };
+    long indicesA[] = { 7, 3, 0 };
+    long indicesC[] = { 9, 5 };
+    long indicesG[] = { 10, 6, 8, 4 };
+    long indicesT[] = { 2, 1 };
 
     struct bucket buckets_valid[5] = {
 	{ code_char('$'), indices$, 1, 0 },
-	{ code_char('I'), indicesI, 5, 0 },
-	{ code_char('M'), indicesM, 2, -1 },
-	{ code_char('P'), indicesP, 2, -1 },
-	{ code_char('S'), indicesS, 4, -1 }
+	{ code_char('A'), indicesA, 3, 0 },
+	{ code_char('C'), indicesC, 2, -1 },
+	{ code_char('G'), indicesG, 4, -1 },
+	{ code_char('T'), indicesT, 2, -1 }
     };
 
-    struct bucket_suite* bs = sais(text, 15, 27);
+    struct bucket_suite* bs = sais(text, 12, 27);
 
     for (int i = 0; i < bs->length; ++i) {
 	for (int j = 0; j < bs->buckets[i].length; ++j) {

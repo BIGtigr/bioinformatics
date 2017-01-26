@@ -42,7 +42,8 @@ struct long_suite {
     int length;
 };
 
-struct sstar_substring_suite* find_sstar_substrings(struct ch_suite* ch_suite);
+struct sstar_substring_suite* find_sstar_substrings(struct ch_suite* ch_suite,
+						    struct bucket_suite* bucket_suite);
 
 struct ch_suite* right_pass(long* text, long text_length);
 
